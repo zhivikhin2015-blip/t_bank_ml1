@@ -1,0 +1,64 @@
+{
+  "evaluation_policy": "approved_complete_months",
+  "period_reason": "User explicitly approved July–October before seeing outcomes; November remains closed.",
+  "original_reserved_test_months": [
+    "2022-07-01",
+    "2022-11-01"
+  ],
+  "evaluation_dates": [
+    "2022-07-01",
+    "2022-08-01",
+    "2022-09-01",
+    "2022-10-01"
+  ],
+  "source_artifact_sha256": {
+    "manual_results": "e045714132c23b0aba4ff8c9e7b59ecc0c06fadeb3546647c563dd1009e2a99b",
+    "automatic_results": "28852e2bfd1dad12b57e5702461f51fee5b9c54ea4e3158bff7d54d695de1955",
+    "manual_model": "7eac77437b040bcf5af9637f70da27315afe766d28bc28d5befacba8031daeb8",
+    "automatic_model": "0a7368e6b101c7b55284f80dd1b2dc8861f83d1a74bf190808b1e53bd775f138",
+    "manual_control": "bb04b543b45e62c4704df6687325a41edd1f3843f5bc3318c599110a0cb7bc64"
+  },
+  "transactions_sha256": "358871fa1311a802799df86e56c3d633513566965b01412d058e0f8fbe6cd54b",
+  "models_frozen": true,
+  "new_training_fits": 0,
+  "primary_comparison": "automatic_selected - manual_selected",
+  "secondary_comparisons": [
+    "automatic_selected - pair_then_popularity",
+    "automatic_selected - manual_100_7_control"
+  ],
+  "comparison_methods": [
+    "manual_selected",
+    "automatic_selected",
+    "manual_100_7_control",
+    "pair_then_popularity",
+    "popularity"
+  ],
+  "metric_definitions": {
+    "primary_population": "user-months with at least one in-catalog positive",
+    "Recall@5": "mean(hits / in-catalog positive assets) over eligible user-months",
+    "Precision@5": "mean(hits / 5) over eligible user-months",
+    "NDCG@5": "mean(binary DCG / IDCG(min(R,5))) over eligible user-months; discount=1/log2(rank+1)",
+    "Precision@5_all": "mean(hits / 5) over all user-months, including zero positives",
+    "LogLoss": "mean binary negative log-likelihood over all candidate pairs; clip [1e-15,1-1e-15]",
+    "ROC-AUC": "global pair AUC over all candidates; null for one class or ranking-only method",
+    "overall_aggregation": "direct macro average over eligible user-months, not unweighted month averages"
+  },
+  "tie_break": {
+    "seed": 42,
+    "algorithm": "BLAKE2b 64-bit, person=FAR-tie, unsigned big-endian",
+    "payload": "UTF-8 compact JSON [seed, customerID, YYYY-MM-DD, ISIN]",
+    "order": "criteria descending; digest ascending; ISIN ascending on collision",
+    "row_order_independent": true,
+    "same_for_all_methods": true
+  },
+  "bootstrap": {
+    "seed": 20261013,
+    "repeats": 5000,
+    "unit": "client",
+    "replacement": true,
+    "pool_size": 500,
+    "draw_size": 500
+  },
+  "period_selected_before_outcomes": true,
+  "test_evaluated": true
+}

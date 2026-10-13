@@ -1,0 +1,127 @@
+{
+  "mode": "final",
+  "fresh_process": true,
+  "source_notebook_sha256": "9330f2922513075c998cf0f55f7b73eeb70cda32de2825e55fe0db436fb1c4f7",
+  "versions": {
+    "python": "3.15.0",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit_learn": "1.9.1",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0"
+  },
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "cpu": "arm64",
+  "thread_limit": 4,
+  "single_run_wall_seconds": 6.167540124966763,
+  "peak_process_rss_bytes": 365395968,
+  "cells": [
+    {
+      "cell_index": 2,
+      "seconds": 0.043796292040497065
+    },
+    {
+      "cell_index": 4,
+      "seconds": 0.004333416000008583
+    },
+    {
+      "cell_index": 6,
+      "seconds": 0.0021426670718938112
+    },
+    {
+      "cell_index": 8,
+      "seconds": 0.0008789170533418655
+    },
+    {
+      "cell_index": 10,
+      "seconds": 0.06435033399611712
+    },
+    {
+      "cell_index": 12,
+      "seconds": 4.239795166999102
+    },
+    {
+      "cell_index": 14,
+      "seconds": 0.7339858750347048
+    },
+    {
+      "cell_index": 16,
+      "seconds": 0.047622667043469846
+    },
+    {
+      "cell_index": 18,
+      "seconds": 1.0205078329890966
+    },
+    {
+      "cell_index": 20,
+      "seconds": 0.0011320000048726797
+    },
+    {
+      "cell_index": 22,
+      "seconds": 0.00156662508379668
+    }
+  ],
+  "model_operations": [
+    {
+      "operation": "predict_proba",
+      "cell_index": 14,
+      "rows": 100000,
+      "features": 5,
+      "max_iter": 200,
+      "seconds": 0.05326037504710257
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 14,
+      "rows": 100000,
+      "features": 10,
+      "max_iter": 100,
+      "seconds": 0.025488249957561493
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 14,
+      "rows": 100000,
+      "features": 5,
+      "max_iter": 100,
+      "seconds": 0.024622833007015288
+    }
+  ],
+  "checks": {
+    "source_artifacts_consistent": true,
+    "csv_hash_matches": true,
+    "models_and_parameters_frozen": true,
+    "period_gate_before_test_access": true,
+    "cutoff_boundary_fixture": true,
+    "metric_fixture_with_zero_buys": true,
+    "one_class_auc": true,
+    "row_order_invariance_fixture": true,
+    "label_invariance_fixture": true,
+    "bootstrap_multiplicity_fixture": true,
+    "empty_bootstrap_draw": true,
+    "unsupported_november_guard": true,
+    "unique_test_pair_months": true,
+    "fifty_candidates_per_case": true,
+    "counter_bounds": true,
+    "five_recommendations_each": true,
+    "key_aligned_row_invariance": true,
+    "fixed_predictions_label_invariance": true,
+    "monthly_overall_weights": true,
+    "group_denominators": true,
+    "bootstrap_real_draws_reconstructed": true,
+    "coverage_label_consistency": true,
+    "input_artifacts_unchanged": true
+  },
+  "independent_checks": {
+    "explicit_metric_oracle_all_methods": true,
+    "max_ranking_metric_error": 0,
+    "logloss_auc_library_oracle": true,
+    "bootstrap_first_10_draws_all_comparisons": true,
+    "independent_two_positive_fixture": true,
+    "equal_score_order_invariance": true,
+    "actual_future_events_feature_invariance": true,
+    "rows": 100000,
+    "november_excluded": true
+  },
+  "source_artifacts_unchanged": true
+}

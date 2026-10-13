@@ -1,0 +1,29 @@
+{
+  "original_files_unchanged": 118,
+  "source_snapshot_hashes_verified": 18,
+  "scripts_compile": true,
+  "local_report_links_resolve": true,
+  "strict_json_no_nan": true,
+  "evaluated_notebook_no_error_outputs": true,
+  "full_offline_reproduction_matches": true,
+  "fixed_models_test_evaluation": true,
+  "november_outcomes_excluded": true,
+  "metric_oracle_max_error": 0,
+  "skill_validation": "Skill is valid!",
+  "installed_skill_matches_git_copy": true,
+  "pretest_protocol_commit": "dbf9021",
+  "delivery_pipeline_runs": {
+    "manual": {
+      "cell_wall_seconds": 13.947216290980577,
+      "fit_count": 6
+    },
+    "automatic": {
+      "cell_wall_seconds": 16.5483489590697,
+      "fit_count": 6
+    },
+    "final": {
+      "cell_wall_seconds": 6.1508381250314415,
+      "fit_count": 0
+    }
+  }
+}

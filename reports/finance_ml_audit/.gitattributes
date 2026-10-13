@@ -1,0 +1,4 @@
+*.ipynb -text
+*.json -text
+source_inputs/** -text
+*.zip binary

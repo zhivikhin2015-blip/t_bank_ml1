@@ -1,0 +1,203 @@
+{
+  "mode": "manual",
+  "fresh_process": true,
+  "source_notebook_sha256": "53a5f998d351126a7115510dbb9dd5ee554c9ac3cc61bd225e8765d2bf9b05bf",
+  "versions": {
+    "python": "3.15.0",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit_learn": "1.9.1",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0"
+  },
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "cpu": "arm64",
+  "thread_limit": 4,
+  "single_run_wall_seconds": 14.074765207944438,
+  "peak_process_rss_bytes": 633913344,
+  "cells": [
+    {
+      "cell_index": 2,
+      "seconds": 0.21764512499794364
+    },
+    {
+      "cell_index": 4,
+      "seconds": 0.00020962499547749758
+    },
+    {
+      "cell_index": 6,
+      "seconds": 0.6641111249336973
+    },
+    {
+      "cell_index": 8,
+      "seconds": 5.725620875018649
+    },
+    {
+      "cell_index": 10,
+      "seconds": 1.0272102080052719
+    },
+    {
+      "cell_index": 11,
+      "seconds": 4.28442716691643
+    },
+    {
+      "cell_index": 13,
+      "seconds": 0.8917339999461547
+    },
+    {
+      "cell_index": 15,
+      "seconds": 0.1155057909199968
+    },
+    {
+      "cell_index": 17,
+      "seconds": 0.04631966690067202
+    },
+    {
+      "cell_index": 19,
+      "seconds": 1.0605286660138518
+    },
+    {
+      "cell_index": 21,
+      "seconds": 0.0004084159154444933
+    },
+    {
+      "cell_index": 23,
+      "seconds": 0.013285459019243717
+    }
+  ],
+  "model_operations": [
+    {
+      "operation": "fit",
+      "cell_index": 10,
+      "rows": 525000,
+      "features": 2,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "seconds": 0.4322151249507442
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 10,
+      "rows": 150000,
+      "features": 2,
+      "max_iter": 100,
+      "seconds": 0.05487858294509351
+    },
+    {
+      "operation": "fit",
+      "cell_index": 10,
+      "rows": 525000,
+      "features": 3,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "seconds": 0.4689495840575546
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 10,
+      "rows": 150000,
+      "features": 3,
+      "max_iter": 100,
+      "seconds": 0.039320374955423176
+    },
+    {
+      "operation": "fit",
+      "cell_index": 11,
+      "rows": 525000,
+      "features": 5,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "seconds": 0.6276007080450654
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 11,
+      "rows": 150000,
+      "features": 5,
+      "max_iter": 100,
+      "seconds": 0.03860145795624703
+    },
+    {
+      "operation": "fit",
+      "cell_index": 11,
+      "rows": 525000,
+      "features": 5,
+      "max_iter": 100,
+      "max_leaf_nodes": 15,
+      "seconds": 0.7223322500940412
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 11,
+      "rows": 150000,
+      "features": 5,
+      "max_iter": 100,
+      "seconds": 0.0512278750538826
+    },
+    {
+      "operation": "fit",
+      "cell_index": 11,
+      "rows": 525000,
+      "features": 5,
+      "max_iter": 200,
+      "max_leaf_nodes": 7,
+      "seconds": 1.118160624988377
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 11,
+      "rows": 150000,
+      "features": 5,
+      "max_iter": 200,
+      "seconds": 0.07118891691789031
+    },
+    {
+      "operation": "fit",
+      "cell_index": 11,
+      "rows": 525000,
+      "features": 5,
+      "max_iter": 200,
+      "max_leaf_nodes": 15,
+      "seconds": 1.2607774579664692
+    },
+    {
+      "operation": "predict_proba",
+      "cell_index": 11,
+      "rows": 150000,
+      "features": 5,
+      "max_iter": 200,
+      "seconds": 0.08871220902074128
+    }
+  ],
+  "checks": {
+    "metric_fixture": true,
+    "stratum_original_top5": true,
+    "one_class_auc": true,
+    "ranking_only_null_metrics": true,
+    "bootstrap_multiplicity": true,
+    "bootstrap_empty_draw": true,
+    "tie_row_order_invariance_all_methods": true,
+    "future_labels_do_not_change_top5": true,
+    "monthly_overall_consistency": true,
+    "coverage_label_consistency": true,
+    "test_guard": true
+  },
+  "record_differences": [
+    {
+      "key": ".output_directory",
+      "kind": "value",
+      "original": "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs",
+      "reproduced": "/private/tmp/finance-ml-audit-20261013/manual/outputs"
+    }
+  ],
+  "unexpected_differences": [],
+  "validation_probabilities": {
+    "rows": 150000,
+    "max_abs_difference": 0.0,
+    "byte_identical": true,
+    "source_sha256": "02fb00f982c54dc3dda1e7dcbd5df54e97ea410e99196ef7c0b463a0696a4ba7",
+    "reproduced_sha256": "02fb00f982c54dc3dda1e7dcbd5df54e97ea410e99196ef7c0b463a0696a4ba7"
+  },
+  "control_max_abs_difference": 0.0,
+  "source_artifacts_unchanged": true
+}

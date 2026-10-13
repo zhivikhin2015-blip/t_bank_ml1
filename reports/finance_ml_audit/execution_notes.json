@@ -1,0 +1,23 @@
+{
+  "successful_manual_fits": 6,
+  "successful_automatic_fits": 6,
+  "final_training_fits": 0,
+  "failed_automatic_instrumentation_attempt": {
+    "selector_fits_before_failure": 1,
+    "test_not_accessed": true,
+    "cause": "Timing wrapper name differed from predict_proba; scorer looked for traced_predict.",
+    "fix": "functools.wraps preserves wrapped method name and signature."
+  },
+  "initial_final_cell_execution_seconds": 6.365706166019663,
+  "delivery_replay_cell_execution_seconds": 6.167540124966763,
+  "replay_changes": "archive input extraction and workspace paths only; no model/protocol changes",
+  "pretest_protocol_commit": "dbf9021",
+  "skill_validation": "Skill is valid!",
+  "additional_delivery_reproduction_fits": {
+    "manual": 6,
+    "automatic": 6,
+    "final": 0
+  },
+  "successful_total_audit_training_fits": 24,
+  "including_failed_attempt_total_audit_training_fits": 25
+}

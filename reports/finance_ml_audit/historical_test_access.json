@@ -1,0 +1,34 @@
+[
+  {
+    "source": "outputs/manual_baseline.ipynb",
+    "sha256": "99c4bdfe3113baa8f7f25bd5aaf6c19841ecbb1a57f5d7aeaa44961f5ec6a330",
+    "cell_index": 6,
+    "execution_count": 3,
+    "code": "monthly_tables = [\n    make_month_dataset(date)\n    for date in pd.date_range(first_prediction, last_prediction, freq='MS')\n]\ndataset = pd.concat(monthly_tables, ignore_index=True)\ndel monthly_tables\n\ntrain = dataset[dataset['prediction_date'] < validation_start].copy()\nvalidation = dataset[\n    (dataset['prediction_date'] >= validation_start)\n    & (dataset['prediction_date'] < test_start)\n].copy()\ntest = dataset[dataset['prediction_date'] >= test_start].copy()\n\nassert not dataset.duplicated(['customerID', 'ISIN', 'prediction_date']).any()\nassert not dataset[manual_features].isna().any().any()\nassert dataset['label'].isin([0, 1]).all()\nassert (dataset['user_buy_count_3m'] >= dataset['user_buy_count_1m']).all()\nassert (dataset['user_item_buy_count_3m'] >= dataset['user_item_buy_count_1m']).all()\nassert (dataset['user_item_buy_count_3m'] <= dataset['user_buy_count_3m']).all()\nassert train['prediction_date'].max() + pd.DateOffset(months=1) <= validation['prediction_date'].min()\nassert validation['prediction_date'].max() + pd.DateOffset(months=1) <= test['prediction_date'].min()\n\nprint('Всего:', len(dataset), '| Train:', len(train),\n      '| Validation:', len(validation), '| Test:', len(test))",
+    "outputs": [
+      {
+        "output_type": "stream",
+        "name": "stdout",
+        "text": "Всего: 800000 | Train: 525000 | Validation: 150000 | Test: 125000\n"
+      }
+    ]
+  },
+  {
+    "source": "outputs/01_far_trans_learning.ipynb",
+    "sha256": "07e9effabbbe0cbe2a7df1b09d6af6e59ef167f522a52f3d34407cc09bf473a9",
+    "cell_index": 43,
+    "execution_count": 46,
+    "code": "test_v3 = pd.concat(\n    [\n        make_month_dataset_v3(date)\n        for date in pd.date_range(\n            \"2022-07-01\", \"2022-11-01\", freq=\"MS\"\n        )\n    ],\n    ignore_index=True\n)\n\nassert not test_v3[manual_features].isna().any().any()\n\nassert (\n    validation_v3[\"prediction_date\"].max()\n    + pd.DateOffset(months=1)\n    <= test_v3[\"prediction_date\"].min()\n)\n\nprint(\"Строк test:\", len(test_v3))\nprint(\"Признаков:\", len(manual_features))\nprint(\"Test подготовлен; качество на нём пока не оценивали.\")",
+    "outputs": [
+      {
+        "name": "stdout",
+        "output_type": "stream",
+        "text": [
+          "Строк test: 125000\n",
+          "Признаков: 5\n",
+          "Test подготовлен; качество на нём пока не оценивали.\n"
+        ]
+      }
+    ]
+  }
+]

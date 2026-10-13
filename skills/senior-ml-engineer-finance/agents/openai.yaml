@@ -1,0 +1,6 @@
+interface:
+  display_name: "Senior ML Engineer Finance"
+  short_description: "Научный аудит и воспроизведение финансового ML"
+  default_prompt: "Используй $senior-ml-engineer-finance для доказательного аудита финансового ML-исследования и проверки его результатов."
+policy:
+  allow_implicit_invocation: true
