@@ -1,0 +1,20 @@
+{
+  "evaluation_dates": [
+    "2022-07-01",
+    "2022-08-01",
+    "2022-09-01",
+    "2022-10-01"
+  ],
+  "test_evaluated": true,
+  "primary_comparison": "automatic_selected - manual_selected",
+  "comparison_methods": [
+    "manual_selected",
+    "automatic_selected",
+    "manual_100_7_control",
+    "pair_then_popularity",
+    "popularity"
+  ],
+  "transactions_sha256": "358871fa1311a802799df86e56c3d633513566965b01412d058e0f8fbe6cd54b",
+  "interpretation": "These months were evaluated previously and are exploratory for the current feature-automation comparison.",
+  "source_commit": "7d58970"
+}

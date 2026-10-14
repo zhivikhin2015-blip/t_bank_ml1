@@ -3,4 +3,9 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .ipynb_checkpoints/
-work/pip-cache/
+*.egg-info/
+build/
+dist/
+.tmp/
+data/processed/
+results/runs/

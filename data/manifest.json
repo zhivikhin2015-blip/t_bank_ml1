@@ -1,0 +1,20 @@
+{
+  "public_archive_url": "https://researchdata.gla.ac.uk/1658/1/FAR-Trans.zip",
+  "license": "CC BY 4.0",
+  "license_record": "https://researchdata.gla.ac.uk/1658/",
+  "downloaded_archive_sha256": "d0d6cfe027732bab45fdcf9af80eff4fefddc789aedae9bdce0d3d6cfd05cfb6",
+  "bundle_archive_sha256": "d0d6cfe027732bab45fdcf9af80eff4fefddc789aedae9bdce0d3d6cfd05cfb6",
+  "public_files_verified": {
+    "customer_information.csv": "c4ad52ebca90e32bf3df5eb64f362b7a3437b77d978b22627cc46927fe7064af",
+    "asset_information.csv": "33f9897b14087068fba53a0bc9e24a0031b096bd3ad3e977e534153f29b7a590",
+    "README.txt": "5aa20b492c9fe18c8b5a147ad13fae99862c78aea59cbf542b734b5eef9ea072"
+  },
+  "required_files": [
+    "transactions.csv",
+    "asset_information.csv"
+  ],
+  "source_file_sha256": {
+    "transactions.csv": "358871fa1311a802799df86e56c3d633513566965b01412d058e0f8fbe6cd54b",
+    "asset_information.csv": "33f9897b14087068fba53a0bc9e24a0031b096bd3ad3e977e534153f29b7a590"
+  }
+}
