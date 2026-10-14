@@ -1,0 +1,16 @@
+{
+  "dataset": "FAR-Trans",
+  "download_date": "2026-10-12",
+  "source": "https://researchdata.gla.ac.uk/1658/1/FAR-Trans.zip",
+  "archive_sha256": "d0d6cfe027732bab45fdcf9af80eff4fefddc789aedae9bdce0d3d6cfd05cfb6",
+  "rows": 388048,
+  "customers": 29090,
+  "transacted_assets": 320,
+  "actions": {
+    "Buy": 228913,
+    "Sell": 159135
+  },
+  "first_date": "2018-01-02",
+  "last_date": "2022-11-30",
+  "pandas_version": "2.2.3"
+}

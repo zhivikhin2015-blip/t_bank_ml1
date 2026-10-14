@@ -1,0 +1,10 @@
+{
+  "conditional_probabilities": {
+    "no_past_buy": 0.005689192073200041,
+    "past_buy": 0.27560826006951544
+  },
+  "conditional_validation_logloss": 0.03582760374541653,
+  "constant_validation_logloss": 0.042377469309878,
+  "boosting_validation_logloss": 0.03368894589321477,
+  "test_evaluated": false
+}

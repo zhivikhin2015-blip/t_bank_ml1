@@ -1,0 +1,269 @@
+{
+  "status": "awaiting_period_resolution",
+  "protocol": {
+    "evaluation_policy": "pending",
+    "period_reason": "Awaiting explicit choice of final evaluation period.",
+    "original_reserved_test_months": [
+      "2022-07-01",
+      "2022-11-01"
+    ],
+    "evaluation_dates": [],
+    "source_artifact_sha256": {
+      "manual_results": "e045714132c23b0aba4ff8c9e7b59ecc0c06fadeb3546647c563dd1009e2a99b",
+      "automatic_results": "28852e2bfd1dad12b57e5702461f51fee5b9c54ea4e3158bff7d54d695de1955",
+      "manual_model": "7eac77437b040bcf5af9637f70da27315afe766d28bc28d5befacba8031daeb8",
+      "automatic_model": "0a7368e6b101c7b55284f80dd1b2dc8861f83d1a74bf190808b1e53bd775f138",
+      "manual_control": "bb04b543b45e62c4704df6687325a41edd1f3843f5bc3318c599110a0cb7bc64"
+    },
+    "transactions_sha256": "358871fa1311a802799df86e56c3d633513566965b01412d058e0f8fbe6cd54b",
+    "models_frozen": true,
+    "new_training_fits": 0,
+    "primary_comparison": "automatic_selected - manual_selected",
+    "secondary_comparisons": [
+      "automatic_selected - pair_then_popularity",
+      "automatic_selected - manual_100_7_control"
+    ],
+    "comparison_methods": [
+      "manual_selected",
+      "automatic_selected",
+      "manual_100_7_control",
+      "pair_then_popularity",
+      "popularity"
+    ],
+    "metric_definitions": {
+      "primary_population": "user-months with at least one in-catalog positive",
+      "Recall@5": "mean(hits / in-catalog positive assets) over eligible user-months",
+      "Precision@5": "mean(hits / 5) over eligible user-months",
+      "NDCG@5": "mean(binary DCG / IDCG(min(R,5))) over eligible user-months; discount=1/log2(rank+1)",
+      "Precision@5_all": "mean(hits / 5) over all user-months, including zero positives",
+      "LogLoss": "mean binary negative log-likelihood over all candidate pairs; clip [1e-15,1-1e-15]",
+      "ROC-AUC": "global pair AUC over all candidates; null for one class or ranking-only method",
+      "overall_aggregation": "direct macro average over eligible user-months, not unweighted month averages"
+    },
+    "tie_break": {
+      "seed": 42,
+      "algorithm": "BLAKE2b 64-bit, person=FAR-tie, unsigned big-endian",
+      "payload": "UTF-8 compact JSON [seed, customerID, YYYY-MM-DD, ISIN]",
+      "order": "criteria descending; digest ascending; ISIN ascending on collision",
+      "row_order_independent": true,
+      "same_for_all_methods": true
+    },
+    "bootstrap": {
+      "seed": 20261013,
+      "repeats": 5000,
+      "unit": "client",
+      "replacement": true,
+      "pool_size": 500,
+      "draw_size": 500
+    },
+    "period_selected_before_outcomes": false,
+    "test_evaluated": false
+  },
+  "test_evaluated": false,
+  "full_reserved_test_evaluated": false,
+  "excluded_reserved_dates": [
+    "2022-07-01",
+    "2022-08-01",
+    "2022-09-01",
+    "2022-10-01",
+    "2022-11-01"
+  ],
+  "excluded_months_not_inspected": true,
+  "observation": {
+    "start_inclusive": "2018-01-02",
+    "end_exclusive": "2022-11-30",
+    "source": "https://researchdata.gla.ac.uk/1658/",
+    "source_checked_on": "2026-10-12",
+    "reason": "Repository collection period ends 29 November 2022; include that day, conservative exclusive next day",
+    "article_source": "https://arxiv.org/html/2407.08692v1",
+    "max_timestamp_used_as_completeness_proof": false,
+    "full_november_supported": false,
+    "event_completeness_proven": false
+  },
+  "observation_rechecked_sources": {
+    "checked_on": "2026-10-13",
+    "repository": "https://researchdata.gla.ac.uk/1658/",
+    "readme": "https://researchdata.gla.ac.uk/1658/2/README.txt",
+    "paper": "https://arxiv.org/abs/2407.08692",
+    "author_code": "https://github.com/JavierSanzCruza/far-trans",
+    "full_november_confirmed": false,
+    "max_timestamp_used_as_proof": false
+  },
+  "model_parameters": {
+    "manual": {
+      "max_iter": 200,
+      "max_leaf_nodes": 7,
+      "learning_rate": 0.1,
+      "early_stopping": false,
+      "random_state": 42
+    },
+    "automatic": {
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "learning_rate": 0.1,
+      "early_stopping": false,
+      "random_state": 42
+    }
+  },
+  "model_features": {
+    "manual": [
+      "user_buy_count_1m",
+      "user_item_buy_count_1m",
+      "item_buy_count_1m",
+      "user_buy_count_3m",
+      "user_item_buy_count_3m"
+    ],
+    "automatic": [
+      "user_buy_count_1m",
+      "user_item_buy_count_1m",
+      "item_buy_count_1m",
+      "user_buy_count_3m",
+      "user_item_buy_count_3m",
+      "item_buy_count_60d",
+      "user_item_buy_count_60d",
+      "item_buy_count_14d",
+      "user_buy_count_60d",
+      "user_item_buy_count_14d"
+    ]
+  },
+  "metric_definitions": {
+    "primary_population": "user-months with at least one in-catalog positive",
+    "Recall@5": "mean(hits / in-catalog positive assets) over eligible user-months",
+    "Precision@5": "mean(hits / 5) over eligible user-months",
+    "NDCG@5": "mean(binary DCG / IDCG(min(R,5))) over eligible user-months; discount=1/log2(rank+1)",
+    "Precision@5_all": "mean(hits / 5) over all user-months, including zero positives",
+    "LogLoss": "mean binary negative log-likelihood over all candidate pairs; clip [1e-15,1-1e-15]",
+    "ROC-AUC": "global pair AUC over all candidates; null for one class or ranking-only method",
+    "overall_aggregation": "direct macro average over eligible user-months, not unweighted month averages"
+  },
+  "tie_break": {
+    "seed": 42,
+    "algorithm": "BLAKE2b 64-bit, person=FAR-tie, unsigned big-endian",
+    "payload": "UTF-8 compact JSON [seed, customerID, YYYY-MM-DD, ISIN]",
+    "order": "criteria descending; digest ascending; ISIN ascending on collision",
+    "row_order_independent": true,
+    "same_for_all_methods": true
+  },
+  "overall": null,
+  "monthly": null,
+  "denominators": null,
+  "catalog_coverage": null,
+  "repeat_definition": "positive pair with Buy in preceding 3 calendar months strictly before cutoff",
+  "new_definition": "positive pair without Buy in same 3-month window, not lifetime first purchase",
+  "purchase_diagnostics": null,
+  "bootstrap": {
+    "seed": 20261013,
+    "repeats": 5000,
+    "paired_client_sampling": true,
+    "pool_size": 500,
+    "draw_size": 500,
+    "all_months_and_multiplicity_retained": true,
+    "empty_draws_excluded_and_counted": true,
+    "results": null
+  },
+  "checks": {
+    "source_artifacts_consistent": true,
+    "csv_hash_matches": true,
+    "models_and_parameters_frozen": true,
+    "period_gate_before_test_access": true,
+    "cutoff_boundary_fixture": true,
+    "metric_fixture_with_zero_buys": true,
+    "one_class_auc": true,
+    "row_order_invariance_fixture": true,
+    "label_invariance_fixture": true,
+    "bootstrap_multiplicity_fixture": true,
+    "empty_bootstrap_draw": true,
+    "unsupported_november_guard": true,
+    "input_artifacts_unchanged": true
+  },
+  "conclusions": [
+    "Код итогового сравнения полностью подготовлен и проверен на искусственных данных.",
+    "Реальные метрики test не вычислены: решение о полном периоде не принято либо граница не подтверждена.",
+    "Нельзя представлять результаты validation как независимые результаты test.",
+    "Это автоматическое расширение ручной базы в заданном пространстве, не полностью автономное проектирование.",
+    "Ограничения реконструированных событий FAR-Trans и фиксированного каталога сохраняются.",
+    "По этим метрикам не доказывается прибыльность, финансовая пригодность или причинный эффект рекомендаций."
+  ],
+  "new_training_fits": 0,
+  "previous_experiment_budget": {
+    "manual": {
+      "boosting_fits_in_this_notebook": 6,
+      "counting_unit": "six fits per complete execution; verification reruns repeat the same configurations",
+      "feature_sets_evaluated": [
+        2,
+        3,
+        5
+      ],
+      "five_feature_settings": [
+        [
+          100,
+          7
+        ],
+        [
+          100,
+          15
+        ],
+        [
+          200,
+          7
+        ],
+        [
+          200,
+          15
+        ]
+      ],
+      "additional_ranking_only_rules": 3,
+      "bootstrap_draws": 5000,
+      "earlier_experiments": null,
+      "manual_feature_generation_selection_cost": null,
+      "future_budget": "record feature generation/selection and model tuning separately, including all trials"
+    },
+    "automatic": {
+      "boosting_fits_this_run": 6,
+      "selection_model_fits": 1,
+      "all_features_control_fits": 1,
+      "tuning_fits": 4,
+      "manual_control_fits": 0,
+      "manual_control_source": "verified_cached_artifact",
+      "candidate_new_features": 12,
+      "candidate_total_features": 17,
+      "permutation_prediction_calls": 52,
+      "inner_quality_prediction_calls": 1,
+      "bootstrap_draws": 5000,
+      "feature_generation_and_selection": "12 generated candidates, one selector fit, 52 permutation-score predictions",
+      "model_tuning": "four selected-set configurations; all-17 and manual control excluded from winner selection",
+      "manual_notebook_documented_fits": 6,
+      "previous_automatic_notebook_documented_fits": 6,
+      "earlier_undocumented_experiments": null,
+      "equal_total_cost_with_manual_baseline": false,
+      "counting_unit": "fits per full execution; verification reruns repeat the same configurations"
+    }
+  },
+  "limits": [
+    "Fixed cohort of existing clients and fixed catalog; asset availability not modeled.",
+    "Coverage denominator includes out-of-catalog buys; ranking metrics do not.",
+    "Zero means no recorded buy, not an explicit dislike; no exposure data.",
+    "Source reconstructed events and date changes may use future information; timestamp filters do not fully remove this limitation.",
+    "No independent advantage claim from validation selection and diagnostic bootstrap.",
+    "Calendar checks do not establish event completeness for each client and asset.",
+    "November test month is not fully supported by repository collection boundary; documentation clarification required before final evaluation.",
+    "Earlier experimental count and manual feature design/selection cost unknown; monthly repeats protocol differs from paper.",
+    "No profitability, suitability or causal recommendation-effect assessment.",
+    "Correlated manual features and neighboring windows may substitute for one another.",
+    "Low importance does not prove absence of useful information.",
+    "Positive mean over three shuffles is not a statistical significance test.",
+    "Row-wise shuffling breaks within-user-month and within-item-month aggregate constancy.",
+    "Selection by LogLoss does not guarantee better Recall or NDCG.",
+    "Manual five features are retained; generation/search space and selection cap are human specified.",
+    "Group differences are observed diagnostics without separate uncertainty intervals.",
+    "If approved, July–October is an explicit pre-outcome period amendment; original November remains unevaluated.",
+    "Client bootstrap describes this fixed time period and does not cover all future market regimes."
+  ],
+  "versions": {
+    "python": "3.15.0",
+    "pandas": "3.0.6",
+    "numpy": "2.5.4",
+    "scikit_learn": "1.9.1",
+    "joblib": "1.6.0"
+  }
+}

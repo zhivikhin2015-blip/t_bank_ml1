@@ -1,0 +1,31 @@
+{
+  "fresh_process": true,
+  "code_cells_executed": 11,
+  "elapsed_seconds": 1.1464185840450227,
+  "checks": {
+    "source_artifacts_consistent": true,
+    "csv_hash_matches": true,
+    "models_and_parameters_frozen": true,
+    "period_gate_before_test_access": true,
+    "cutoff_boundary_fixture": true,
+    "metric_fixture_with_zero_buys": true,
+    "one_class_auc": true,
+    "row_order_invariance_fixture": true,
+    "label_invariance_fixture": true,
+    "bootstrap_multiplicity_fixture": true,
+    "empty_bootstrap_draw": true,
+    "unsupported_november_guard": true,
+    "input_artifacts_unchanged": true
+  },
+  "test_evaluated": false,
+  "new_training_fits": 0,
+  "status": "awaiting_period_resolution",
+  "protected_files_unchanged": {
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/manual_baseline_reviewed_results.json": "e045714132c23b0aba4ff8c9e7b59ecc0c06fadeb3546647c563dd1009e2a99b",
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/manual_baseline_reviewed_model.joblib": "7eac77437b040bcf5af9637f70da27315afe766d28bc28d5befacba8031daeb8",
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/automatic_features_reviewed_results.json": "28852e2bfd1dad12b57e5702461f51fee5b9c54ea4e3158bff7d54d695de1955",
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/automatic_features_reviewed_model.joblib": "0a7368e6b101c7b55284f80dd1b2dc8861f83d1a74bf190808b1e53bd775f138",
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/manual_control_100_7_reviewed_model.joblib": "bb04b543b45e62c4704df6687325a41edd1f3843f5bc3318c599110a0cb7bc64",
+    "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/02_automatic_features_reviewed.ipynb": "be9c402e898c6119edb767f4e88fae984dcda9f1824c412d496215b0515b0f4e"
+  }
+}

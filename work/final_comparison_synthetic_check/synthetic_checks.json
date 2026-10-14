@@ -1,0 +1,32 @@
+{
+  "synthetic_events_only": true,
+  "real_transactions_csv_not_parsed": true,
+  "full_final_evaluation_path_verified": true,
+  "published_notebook_remains_pending": true,
+  "checks": {
+    "source_artifacts_consistent": true,
+    "csv_hash_matches": true,
+    "models_and_parameters_frozen": true,
+    "period_gate_before_test_access": true,
+    "cutoff_boundary_fixture": true,
+    "metric_fixture_with_zero_buys": true,
+    "one_class_auc": true,
+    "row_order_invariance_fixture": true,
+    "label_invariance_fixture": true,
+    "bootstrap_multiplicity_fixture": true,
+    "empty_bootstrap_draw": true,
+    "unsupported_november_guard": true,
+    "unique_test_pair_months": true,
+    "fifty_candidates_per_case": true,
+    "counter_bounds": true,
+    "five_recommendations_each": true,
+    "key_aligned_row_invariance": true,
+    "fixed_predictions_label_invariance": true,
+    "monthly_overall_weights": true,
+    "group_denominators": true,
+    "bootstrap_real_draws_reconstructed": true,
+    "coverage_label_consistency": true,
+    "input_artifacts_unchanged": true
+  },
+  "elapsed_seconds": 6.709565541008487
+}

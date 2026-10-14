@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Research inputs/artifacts are preserved byte-for-byte (hash checks rely on this).
+work/data/** -text
+archive/** -text
+*.ipynb -text
+*.json -text
+*.joblib binary

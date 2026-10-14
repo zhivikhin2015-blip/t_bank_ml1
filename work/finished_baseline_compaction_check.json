@@ -1,0 +1,14 @@
+{
+  "original_cells": 47,
+  "compact_cells": 15,
+  "original_code_cells_executed": 43,
+  "compact_code_cells_executed": 8,
+  "same_all_split_rows_and_values": true,
+  "same_selected_clients_and_assets": true,
+  "same_all_model_metrics": true,
+  "same_four_setting_results": true,
+  "same_chosen_model_validation_predictions": true,
+  "test_evaluated": false,
+  "learning_copy": "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/01_far_trans_learning.ipynb",
+  "working_file": "/Users/annazhivikhina/Documents/Codex/2026-10-11/t-lab-recsys-ml-train-validation/outputs/01_far_trans_data.ipynb"
+}
