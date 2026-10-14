@@ -1,0 +1,435 @@
+{
+  "best": {
+    "old_5": {
+      "trial": 7,
+      "stage": "tune/old_5",
+      "features": [
+        "user__count__1m",
+        "pair__count__1m",
+        "item__count__1m",
+        "user__count__3m",
+        "pair__count__3m"
+      ],
+      "params": {
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "fold_metrics": [
+        {
+          "Recall@5": 0.6025460047199178,
+          "NDCG@5": 0.5226645846170561,
+          "Precision@5": 0.22006688963210702,
+          "Precision@5_all": 0.04386666666666667,
+          "rows": 75000,
+          "positives": 597,
+          "eligible_cases": 299,
+          "all_cases": 1500,
+          "LogLoss": 0.03114154145485642,
+          "ROC-AUC": 0.9187927527912805
+        },
+        {
+          "Recall@5": 0.5667755359719645,
+          "NDCG@5": 0.49117418137121954,
+          "Precision@5": 0.21339285714285716,
+          "Precision@5_all": 0.03186666666666667,
+          "rows": 75000,
+          "positives": 463,
+          "eligible_cases": 224,
+          "all_cases": 1500,
+          "LogLoss": 0.02534854196696059,
+          "ROC-AUC": 0.9207556216517745
+        },
+        {
+          "Recall@5": 0.4509447219447219,
+          "NDCG@5": 0.3820720065082718,
+          "Precision@5": 0.18222222222222223,
+          "Precision@5_all": 0.027333333333333334,
+          "rows": 75000,
+          "positives": 460,
+          "eligible_cases": 225,
+          "all_cases": 1500,
+          "LogLoss": 0.026306733778311005,
+          "ROC-AUC": 0.9054970777289112
+        }
+      ],
+      "aggregate": {
+        "Recall@5": 0.5462320025488475,
+        "NDCG@5": 0.47094375520322745,
+        "Precision@5": 0.2066844919786096,
+        "LogLoss": 0.02759893906670934
+      },
+      "feature_seconds": 0.003373707993887365,
+      "fit_seconds": 3.0658026258461177,
+      "predict_seconds": 0.15248258307110518
+    },
+    "manual": {
+      "trial": 23,
+      "stage": "tune/manual",
+      "features": [
+        "user__count__1m",
+        "pair__count__1m",
+        "item__count__1m",
+        "user__count__3m",
+        "pair__count__3m",
+        "user__count__30d",
+        "item__count__30d",
+        "pair__count__30d",
+        "user__unique__30d",
+        "item__unique__30d",
+        "pair__share__30d",
+        "user__count__90d",
+        "item__count__90d",
+        "pair__count__90d",
+        "user__unique__90d",
+        "item__unique__90d",
+        "pair__share__90d",
+        "user__count__180d",
+        "item__count__180d",
+        "pair__count__180d",
+        "user__unique__180d",
+        "item__unique__180d",
+        "pair__share__180d",
+        "user__recency__180d",
+        "user__trend__30d",
+        "item__recency__180d",
+        "item__trend__30d",
+        "pair__recency__180d",
+        "pair__trend__30d",
+        "category__recency__180d",
+        "category__trend__30d",
+        "subcategory__recency__180d",
+        "subcategory__trend__30d",
+        "sector__recency__180d",
+        "sector__trend__30d",
+        "category__count__90d",
+        "category__share__90d",
+        "category__unique__90d",
+        "subcategory__count__90d",
+        "subcategory__share__90d",
+        "subcategory__unique__90d",
+        "sector__count__90d",
+        "sector__share__90d",
+        "sector__unique__90d"
+      ],
+      "params": {
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "fold_metrics": [
+        {
+          "Recall@5": 0.6443042464781594,
+          "NDCG@5": 0.555706281647025,
+          "Precision@5": 0.23812709030100332,
+          "Precision@5_all": 0.04746666666666667,
+          "rows": 75000,
+          "positives": 597,
+          "eligible_cases": 299,
+          "all_cases": 1500,
+          "LogLoss": 0.02913728528023369,
+          "ROC-AUC": 0.9399588113904829
+        },
+        {
+          "Recall@5": 0.6144317859719645,
+          "NDCG@5": 0.5034633469224327,
+          "Precision@5": 0.22321428571428573,
+          "Precision@5_all": 0.03333333333333333,
+          "rows": 75000,
+          "positives": 463,
+          "eligible_cases": 224,
+          "all_cases": 1500,
+          "LogLoss": 0.023614677488030252,
+          "ROC-AUC": 0.9455070815714729
+        },
+        {
+          "Recall@5": 0.5256807636807637,
+          "NDCG@5": 0.45211355034446815,
+          "Precision@5": 0.208,
+          "Precision@5_all": 0.0312,
+          "rows": 75000,
+          "positives": 460,
+          "eligible_cases": 225,
+          "all_cases": 1500,
+          "LogLoss": 0.024098970942349904,
+          "ROC-AUC": 0.9398696206297172
+        }
+      ],
+      "aggregate": {
+        "Recall@5": 0.5996762855385849,
+        "NDCG@5": 0.5089004234633566,
+        "Precision@5": 0.22459893048128343,
+        "LogLoss": 0.025616977903537952
+      },
+      "feature_seconds": 0.08858708303887397,
+      "fit_seconds": 13.779460583929904,
+      "predict_seconds": 0.3925649990560487
+    }
+  },
+  "controls": {
+    "old_5": {
+      "trial": 0,
+      "stage": "tune/old_5",
+      "features": [
+        "user__count__1m",
+        "pair__count__1m",
+        "item__count__1m",
+        "user__count__3m",
+        "pair__count__3m"
+      ],
+      "params": {
+        "learning_rate": 0.1,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "fold_metrics": [
+        {
+          "Recall@5": 0.6051286877373834,
+          "NDCG@5": 0.5180918835569102,
+          "Precision@5": 0.22006688963210702,
+          "Precision@5_all": 0.04386666666666667,
+          "rows": 75000,
+          "positives": 597,
+          "eligible_cases": 299,
+          "all_cases": 1500,
+          "LogLoss": 0.03139978326598986,
+          "ROC-AUC": 0.9178339650620615
+        },
+        {
+          "Recall@5": 0.554126726448155,
+          "NDCG@5": 0.485385475229024,
+          "Precision@5": 0.20892857142857144,
+          "Precision@5_all": 0.0312,
+          "rows": 75000,
+          "positives": 463,
+          "eligible_cases": 224,
+          "all_cases": 1500,
+          "LogLoss": 0.025303544975979645,
+          "ROC-AUC": 0.9217147319039167
+        },
+        {
+          "Recall@5": 0.45807688607688607,
+          "NDCG@5": 0.3819701498242449,
+          "Precision@5": 0.18400000000000002,
+          "Precision@5_all": 0.027600000000000003,
+          "rows": 75000,
+          "positives": 460,
+          "eligible_cases": 225,
+          "all_cases": 1500,
+          "LogLoss": 0.026293323303134098,
+          "ROC-AUC": 0.9070967149239976
+        }
+      ],
+      "aggregate": {
+        "Recall@5": 0.5456218766379194,
+        "NDCG@5": 0.467351742440204,
+        "Precision@5": 0.20588235294117646,
+        "LogLoss": 0.027665550515034536
+      },
+      "feature_seconds": 1.1723308749496937,
+      "fit_seconds": 2.710231624892913,
+      "predict_seconds": 0.12994479201734066
+    },
+    "manual": {
+      "trial": 16,
+      "stage": "tune/manual",
+      "features": [
+        "user__count__1m",
+        "pair__count__1m",
+        "item__count__1m",
+        "user__count__3m",
+        "pair__count__3m",
+        "user__count__30d",
+        "item__count__30d",
+        "pair__count__30d",
+        "user__unique__30d",
+        "item__unique__30d",
+        "pair__share__30d",
+        "user__count__90d",
+        "item__count__90d",
+        "pair__count__90d",
+        "user__unique__90d",
+        "item__unique__90d",
+        "pair__share__90d",
+        "user__count__180d",
+        "item__count__180d",
+        "pair__count__180d",
+        "user__unique__180d",
+        "item__unique__180d",
+        "pair__share__180d",
+        "user__recency__180d",
+        "user__trend__30d",
+        "item__recency__180d",
+        "item__trend__30d",
+        "pair__recency__180d",
+        "pair__trend__30d",
+        "category__recency__180d",
+        "category__trend__30d",
+        "subcategory__recency__180d",
+        "subcategory__trend__30d",
+        "sector__recency__180d",
+        "sector__trend__30d",
+        "category__count__90d",
+        "category__share__90d",
+        "category__unique__90d",
+        "subcategory__count__90d",
+        "subcategory__share__90d",
+        "subcategory__unique__90d",
+        "sector__count__90d",
+        "sector__share__90d",
+        "sector__unique__90d"
+      ],
+      "params": {
+        "learning_rate": 0.1,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "fold_metrics": [
+        {
+          "Recall@5": 0.625475490692882,
+          "NDCG@5": 0.5429450240028403,
+          "Precision@5": 0.23010033444816053,
+          "Precision@5_all": 0.045866666666666674,
+          "rows": 75000,
+          "positives": 597,
+          "eligible_cases": 299,
+          "all_cases": 1500,
+          "LogLoss": 0.029388950849089435,
+          "ROC-AUC": 0.9395194458104266
+        },
+        {
+          "Recall@5": 0.6143077780354566,
+          "NDCG@5": 0.5089000327485574,
+          "Precision@5": 0.2205357142857143,
+          "Precision@5_all": 0.032933333333333335,
+          "rows": 75000,
+          "positives": 463,
+          "eligible_cases": 224,
+          "all_cases": 1500,
+          "LogLoss": 0.023894872369421862,
+          "ROC-AUC": 0.9441120042111082
+        },
+        {
+          "Recall@5": 0.5196503496503497,
+          "NDCG@5": 0.44799427888758536,
+          "Precision@5": 0.20355555555555555,
+          "Precision@5_all": 0.030533333333333332,
+          "rows": 75000,
+          "positives": 460,
+          "eligible_cases": 225,
+          "all_cases": 1500,
+          "LogLoss": 0.024062146740378425,
+          "ROC-AUC": 0.9404207691230855
+        }
+      ],
+      "aggregate": {
+        "Recall@5": 0.5902987201449769,
+        "NDCG@5": 0.5041883452703647,
+        "Precision@5": 0.2192513368983957,
+        "LogLoss": 0.02578198998629657
+      },
+      "feature_seconds": 10.163940000114962,
+      "fit_seconds": 11.661510709905997,
+      "predict_seconds": 0.1707015421707183
+    }
+  },
+  "ablations": [
+    {
+      "removed": "recency",
+      "recall": 0.5948729041309255,
+      "delta_vs_full": -0.004803381407659346
+    },
+    {
+      "removed": "trend",
+      "recall": 0.6022115362356004,
+      "delta_vs_full": 0.0025352506970155453
+    },
+    {
+      "removed": "category_relations",
+      "recall": 0.5975439667284588,
+      "delta_vs_full": -0.0021323188101260993
+    },
+    {
+      "removed": "unique",
+      "recall": 0.6036522857712697,
+      "delta_vs_full": 0.003976000232684851
+    },
+    {
+      "removed": "share",
+      "recall": 0.5978167814063536,
+      "delta_vs_full": -0.0018595041322312378
+    }
+  ],
+  "frozen": {
+    "old_5": {
+      "params": {
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "validation": {
+        "Recall@5": 0.621705454397762,
+        "NDCG@5": 0.5307210697563147,
+        "Precision@5": 0.246985446985447,
+        "Precision@5_all": 0.0396,
+        "rows": 150000,
+        "positives": 1068,
+        "eligible_cases": 481,
+        "all_cases": 3000,
+        "LogLoss": 0.02750875472563528,
+        "ROC-AUC": 0.9292865828921647
+      },
+      "model_sha256": "849755b960c14c022a70a3da9f0513f26091377afc73f158163134283fe0bf41"
+    },
+    "manual": {
+      "params": {
+        "learning_rate": 0.05,
+        "max_iter": 100,
+        "max_leaf_nodes": 7,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.0
+      },
+      "validation": {
+        "Recall@5": 0.6518641845564923,
+        "NDCG@5": 0.5601559540519894,
+        "Precision@5": 0.2573804573804574,
+        "Precision@5_all": 0.041266666666666674,
+        "rows": 150000,
+        "positives": 1068,
+        "eligible_cases": 481,
+        "all_cases": 3000,
+        "LogLoss": 0.02576510203245443,
+        "ROC-AUC": 0.9465099435571783
+      },
+      "model_sha256": "40ded08c1fa4ccdc7f8c6e8e8e1df46391f814842f63be19c23a6e4fd3611916"
+    }
+  },
+  "rule_validation": {
+    "Recall@5": 0.6154447769832385,
+    "NDCG@5": 0.5350443846901192,
+    "Precision@5": 0.2453222453222454,
+    "Precision@5_all": 0.03933333333333333,
+    "rows": 150000,
+    "positives": 1068,
+    "eligible_cases": 481,
+    "all_cases": 3000,
+    "LogLoss": null,
+    "ROC-AUC": null
+  },
+  "timing": {
+    "fit_seconds": 511.6255392062012,
+    "predict_seconds": 13.441730915685184,
+    "feature_seconds": 13.142962626065128,
+    "fits": 113
+  }
+}

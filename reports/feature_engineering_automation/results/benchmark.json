@@ -1,0 +1,67 @@
+[
+  {
+    "model": "old_5",
+    "development_matrix_shape": [
+      675000,
+      5
+    ],
+    "development_generation_seconds": 0.6100194590399042,
+    "evaluation_generation_seconds": 0.0739634589990601,
+    "evaluation_predict_seconds": 0.028532334021292627,
+    "evaluation_rows": 100000,
+    "peak_rss_bytes": 380108800,
+    "design": "one fresh process/cache per model; OS cache and run order uncontrolled; four model threads"
+  },
+  {
+    "model": "manual",
+    "development_matrix_shape": [
+      675000,
+      44
+    ],
+    "development_generation_seconds": 5.658586374949664,
+    "evaluation_generation_seconds": 0.7100282919127494,
+    "evaluation_predict_seconds": 0.052335457992739975,
+    "evaluation_rows": 100000,
+    "peak_rss_bytes": 794411008,
+    "design": "one fresh process/cache per model; OS cache and run order uncontrolled; four model threads"
+  },
+  {
+    "model": "automatic_all",
+    "development_matrix_shape": [
+      675000,
+      102
+    ],
+    "development_generation_seconds": 10.484042207943276,
+    "evaluation_generation_seconds": 1.3494679169962183,
+    "evaluation_predict_seconds": 0.14358554198406637,
+    "evaluation_rows": 100000,
+    "peak_rss_bytes": 1250230272,
+    "design": "one fresh process/cache per model; OS cache and run order uncontrolled; four model threads"
+  },
+  {
+    "model": "automatic_selected",
+    "development_matrix_shape": [
+      675000,
+      28
+    ],
+    "development_generation_seconds": 2.847521624993533,
+    "evaluation_generation_seconds": 0.36063637491315603,
+    "evaluation_predict_seconds": 0.03026183310430497,
+    "evaluation_rows": 100000,
+    "peak_rss_bytes": 622542848,
+    "design": "one fresh process/cache per model; OS cache and run order uncontrolled; four model threads"
+  },
+  {
+    "model": "manual_plus_automatic",
+    "development_matrix_shape": [
+      675000,
+      50
+    ],
+    "development_generation_seconds": 5.846720166970044,
+    "evaluation_generation_seconds": 0.7316894580144435,
+    "evaluation_predict_seconds": 0.05136133299674839,
+    "evaluation_rows": 100000,
+    "peak_rss_bytes": 852492288,
+    "design": "one fresh process/cache per model; OS cache and run order uncontrolled; four model threads"
+  }
+]

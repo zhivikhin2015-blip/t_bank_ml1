@@ -1,0 +1,563 @@
+{
+  "status": "exploratory: prior audit disclosed outcomes for this period",
+  "metrics": {
+    "old_5": {
+      "Recall@5": 0.5917589036918547,
+      "NDCG@5": 0.5100163502513614,
+      "Precision@5": 0.22542372881355932,
+      "Precision@5_all": 0.026600000000000002,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.01969222919686828,
+      "ROC-AUC": 0.9370769750489969
+    },
+    "manual": {
+      "Recall@5": 0.6553085325829593,
+      "NDCG@5": 0.5614313829581542,
+      "Precision@5": 0.252542372881356,
+      "Precision@5_all": 0.029800000000000004,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.018242944076293555,
+      "ROC-AUC": 0.9532049187826918
+    },
+    "automatic_all": {
+      "Recall@5": 0.6368410184586655,
+      "NDCG@5": 0.5589060398468685,
+      "Precision@5": 0.24745762711864414,
+      "Precision@5_all": 0.0292,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.018388499793283955,
+      "ROC-AUC": 0.9536179619237379
+    },
+    "automatic_selected": {
+      "Recall@5": 0.6431810262131796,
+      "NDCG@5": 0.563537680398041,
+      "Precision@5": 0.24745762711864414,
+      "Precision@5_all": 0.029199999999999997,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.01928301548396323,
+      "ROC-AUC": 0.9259136017266928
+    },
+    "manual_plus_automatic": {
+      "Recall@5": 0.6439384760857843,
+      "NDCG@5": 0.5635565048705066,
+      "Precision@5": 0.24830508474576274,
+      "Precision@5_all": 0.0293,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.01832083086783332,
+      "ROC-AUC": 0.9533303888477878
+    },
+    "pair_popularity": {
+      "Recall@5": 0.617059391118464,
+      "NDCG@5": 0.5303011970793282,
+      "Precision@5": 0.23559322033898306,
+      "Precision@5_all": 0.027800000000000002,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": null,
+      "ROC-AUC": null
+    },
+    "popularity": {
+      "Recall@5": 0.44051567063157293,
+      "NDCG@5": 0.32166310282659033,
+      "Precision@5": 0.16610169491525426,
+      "Precision@5_all": 0.019600000000000003,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": null,
+      "ROC-AUC": null
+    }
+  },
+  "monthly": {
+    "old_5": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.62693372576951,
+        "NDCG@5": 0.5486418658822799,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.6092808551992226,
+        "NDCG@5": 0.5123701065100902,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.5946009389671362,
+        "NDCG@5": 0.5239752578552953,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.5101010101010102,
+        "NDCG@5": 0.4216651315699264,
+        "eligible_cases": 44
+      }
+    ],
+    "manual": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.6868170772582537,
+        "NDCG@5": 0.6011161437546256,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.7507774538386783,
+        "NDCG@5": 0.6110835919824681,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.6130281690140845,
+        "NDCG@5": 0.5460510881845925,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.5656565656565656,
+        "NDCG@5": 0.4660163808987343,
+        "eligible_cases": 44
+      }
+    ],
+    "automatic_all": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.7189158426903526,
+        "NDCG@5": 0.6408212866720605,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.6844509232264334,
+        "NDCG@5": 0.5925100853486014,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.606338028169014,
+        "NDCG@5": 0.5279671636921419,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.49873737373737376,
+        "NDCG@5": 0.4373643172556601,
+        "eligible_cases": 44
+      }
+    ],
+    "automatic_selected": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.6473358681079269,
+        "NDCG@5": 0.5938766726838307,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.7415937803692905,
+        "NDCG@5": 0.6184720918038507,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.6347417840375587,
+        "NDCG@5": 0.5650289954677855,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.5404040404040404,
+        "NDCG@5": 0.4503086582750098,
+        "eligible_cases": 44
+      }
+    ],
+    "manual_plus_automatic": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.6868170772582537,
+        "NDCG@5": 0.6207425196006731,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.7082604470359571,
+        "NDCG@5": 0.594366612197465,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.6186619718309859,
+        "NDCG@5": 0.5467600681953327,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.5429292929292929,
+        "NDCG@5": 0.4627714749692428,
+        "eligible_cases": 44
+      }
+    ],
+    "pair_popularity": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.6374093975196916,
+        "NDCG@5": 0.5752364235949607,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.7548590864917396,
+        "NDCG@5": 0.5776088659958674,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.5910798122065728,
+        "NDCG@5": 0.5208187042098824,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.47222222222222227,
+        "NDCG@5": 0.4193885813451168,
+        "eligible_cases": 44
+      }
+    ],
+    "popularity": [
+      {
+        "month": "2022-07-01",
+        "Recall@5": 0.42279254650578174,
+        "NDCG@5": 0.34177370335924767,
+        "eligible_cases": 72
+      },
+      {
+        "month": "2022-08-01",
+        "Recall@5": 0.5052964042759961,
+        "NDCG@5": 0.33243001122168353,
+        "eligible_cases": 49
+      },
+      {
+        "month": "2022-09-01",
+        "Recall@5": 0.46338028169014084,
+        "NDCG@5": 0.3281814228109548,
+        "eligible_cases": 71
+      },
+      {
+        "month": "2022-10-01",
+        "Recall@5": 0.36047979797979796,
+        "NDCG@5": 0.2662462285402093,
+        "eligible_cases": 44
+      }
+    ]
+  },
+  "groups": {
+    "repeat_3m": {
+      "old_5": {
+        "Recall@5": 0.8850615802108339,
+        "NDCG@5": 0.7971064245747366,
+        "Precision@5": 0.3104477611940298,
+        "Precision@5_all": 0.0208,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "manual": {
+        "Recall@5": 0.9016245984529566,
+        "NDCG@5": 0.8010411217742058,
+        "Precision@5": 0.31940298507462683,
+        "Precision@5_all": 0.021400000000000002,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "automatic_all": {
+        "Recall@5": 0.8751735205093413,
+        "NDCG@5": 0.7850509914434741,
+        "Precision@5": 0.3149253731343284,
+        "Precision@5_all": 0.0211,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "automatic_selected": {
+        "Recall@5": 0.8899330561643994,
+        "NDCG@5": 0.7923191682707804,
+        "Precision@5": 0.31641791044776124,
+        "Precision@5_all": 0.021200000000000004,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "manual_plus_automatic": {
+        "Recall@5": 0.8777854608078488,
+        "NDCG@5": 0.7955048967712236,
+        "Precision@5": 0.31194029850746274,
+        "Precision@5_all": 0.0209,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "pair_popularity": {
+        "Recall@5": 0.8971884458824758,
+        "NDCG@5": 0.8142835313391416,
+        "Precision@5": 0.317910447761194,
+        "Precision@5_all": 0.0213,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "popularity": {
+        "Recall@5": 0.4625053636247666,
+        "NDCG@5": 0.3369840747852376,
+        "Precision@5": 0.15970149253731342,
+        "Precision@5_all": 0.010700000000000001,
+        "rows": 100000,
+        "positives": 280,
+        "eligible_cases": 134,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      }
+    },
+    "new_3m": {
+      "old_5": {
+        "Recall@5": 0.29021252796420577,
+        "NDCG@5": 0.17264348160643497,
+        "Precision@5": 0.0778523489932886,
+        "Precision@5_all": 0.0058000000000000005,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "manual": {
+        "Recall@5": 0.40514541387024605,
+        "NDCG@5": 0.2639981838766771,
+        "Precision@5": 0.11275167785234898,
+        "Precision@5_all": 0.008400000000000001,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "automatic_all": {
+        "Recall@5": 0.3894854586129754,
+        "NDCG@5": 0.26828417248169995,
+        "Precision@5": 0.1087248322147651,
+        "Precision@5_all": 0.0081,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "automatic_selected": {
+        "Recall@5": 0.3973713646532438,
+        "NDCG@5": 0.2725812279879071,
+        "Precision@5": 0.10738255033557045,
+        "Precision@5_all": 0.008,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "manual_plus_automatic": {
+        "Recall@5": 0.40514541387024605,
+        "NDCG@5": 0.27411137198691715,
+        "Precision@5": 0.11275167785234898,
+        "Precision@5_all": 0.008400000000000001,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "pair_popularity": {
+        "Recall@5": 0.3257270693512304,
+        "NDCG@5": 0.1927417966232293,
+        "Precision@5": 0.087248322147651,
+        "Precision@5_all": 0.0065,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      },
+      "popularity": {
+        "Recall@5": 0.4240865026099925,
+        "NDCG@5": 0.2707864077601168,
+        "Precision@5": 0.11946308724832212,
+        "Precision@5_all": 0.008899999999999998,
+        "rows": 100000,
+        "positives": 228,
+        "eligible_cases": 149,
+        "all_cases": 2000,
+        "LogLoss": null,
+        "ROC-AUC": null
+      }
+    }
+  },
+  "coverage": [
+    {
+      "month": "2022-07-01",
+      "in_catalog": 164,
+      "all_assets": 220
+    },
+    {
+      "month": "2022-08-01",
+      "in_catalog": 95,
+      "all_assets": 117
+    },
+    {
+      "month": "2022-09-01",
+      "in_catalog": 166,
+      "all_assets": 208
+    },
+    {
+      "month": "2022-10-01",
+      "in_catalog": 83,
+      "all_assets": 133
+    }
+  ],
+  "bootstrap": {
+    "manual_plus_automatic - manual": {
+      "delta": -0.011370056497175143,
+      "ci95": [
+        -0.02924013620549264,
+        0.004185701391101199
+      ],
+      "repeats": 5000,
+      "empty_draws": 0,
+      "seed": 20261013,
+      "scope": "fixed fitted models and observed months; client sampling only"
+    },
+    "automatic_selected - manual": {
+      "delta": -0.01212750636977955,
+      "ci95": [
+        -0.038387646237328724,
+        0.013066908148132496
+      ],
+      "repeats": 5000,
+      "empty_draws": 0,
+      "seed": 20261013,
+      "scope": "fixed fitted models and observed months; client sampling only"
+    },
+    "manual - pair_popularity": {
+      "delta": 0.0382491414644954,
+      "ci95": [
+        0.001742630747123814,
+        0.07507538737298086
+      ],
+      "repeats": 5000,
+      "empty_draws": 0,
+      "seed": 20261013,
+      "scope": "fixed fitted models and observed months; client sampling only"
+    },
+    "manual_plus_automatic - pair_popularity": {
+      "delta": 0.02687908496732026,
+      "ci95": [
+        -0.012450189201758834,
+        0.0661743787815938
+      ],
+      "repeats": 5000,
+      "empty_draws": 0,
+      "seed": 20261013,
+      "scope": "fixed fitted models and observed months; client sampling only"
+    }
+  },
+  "timing": {
+    "old_5": {
+      "feature_seconds": 0.07660733396187425,
+      "predict_seconds": 0.03262829198502004,
+      "features": 5,
+      "feature_cache": "shared in listed order"
+    },
+    "manual": {
+      "feature_seconds": 0.6579946670681238,
+      "predict_seconds": 0.04138387506827712,
+      "features": 44,
+      "feature_cache": "shared in listed order"
+    },
+    "automatic_all": {
+      "feature_seconds": 0.7132145409705117,
+      "predict_seconds": 0.13523787492886186,
+      "features": 102,
+      "feature_cache": "shared in listed order"
+    },
+    "automatic_selected": {
+      "feature_seconds": 0.0032346670050174,
+      "predict_seconds": 0.029006041935645044,
+      "features": 28,
+      "feature_cache": "shared in listed order"
+    },
+    "manual_plus_automatic": {
+      "feature_seconds": 0.006375042023137212,
+      "predict_seconds": 0.04827875003684312,
+      "features": 50,
+      "feature_cache": "shared in listed order"
+    }
+  },
+  "frozen_model_hashes": {
+    "old_5": "849755b960c14c022a70a3da9f0513f26091377afc73f158163134283fe0bf41",
+    "manual": "40ded08c1fa4ccdc7f8c6e8e8e1df46391f814842f63be19c23a6e4fd3611916",
+    "automatic_all": "156562e44affef56fdb216fbab080c969b3fbb4ff4ed0197cc37d3d8d1fc7c12",
+    "automatic_selected": "6d3ad06693cfc40a4cf2fd22bb339e78807aea51379828341dc657a83d5f1c1c",
+    "manual_plus_automatic": "1261922863bbc6745e1dbf88e5486abfb5189d4e3974a03f23f0782824583496"
+  },
+  "evaluation_fits": 0,
+  "peak_rss_bytes": 627130368,
+  "environment": {
+    "python": "3.15.0",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "sklearn": "1.9.1",
+    "threads": 4
+  }
+}

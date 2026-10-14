@@ -1,0 +1,36 @@
+{
+  "failed_serialization_run": {
+    "completed_fits": 3,
+    "phase": "manual CV first configuration",
+    "reason": "numpy int64 all_cases was not JSON serializable",
+    "fix": "convert case count to Python int",
+    "before_evaluation": true
+  },
+  "boundary_correction": {
+    "utc": "2026-10-13T21:17:08.285245+00:00",
+    "reason": "Boundary 180 has no untested initial +/-half neighbors; add midpoint fallback before final evaluation",
+    "manual_model_unchanged": true,
+    "evaluation_opened_in_this_run": false,
+    "interrupted_auto_completed_cv_fits": 99,
+    "unrecorded_fit_attempts_range": [
+      0,
+      3
+    ]
+  },
+  "original_metrics_crosscheck": {
+    "cohort_matches": true,
+    "metrics": {
+      "Recall@5": 0.5749965305548556,
+      "NDCG@5": 0.5151699243788144,
+      "Precision@5": 0.2245762711864407,
+      "Precision@5_all": 0.0265,
+      "rows": 100000,
+      "positives": 508,
+      "eligible_cases": 236,
+      "all_cases": 2000,
+      "LogLoss": 0.01972298534500642,
+      "ROC-AUC": 0.9364520979172622
+    }
+  },
+  "original_files_preserved": 118
+}
