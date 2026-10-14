@@ -1,0 +1,171 @@
+{
+  "source_sha256": {
+    "predictions.csv.gz": "8031c2dc012d3062a7a47b30fd4007283d480159976f70687d3a1e50e59959c5",
+    "evaluation.json": "c666485ea84547308adc0e89abcb06957acf21e2ef54c670624da38b7f917548",
+    "protocol.json": "eea6b979d4299eaa5c0716a5b73c7e17a59d639fa8246a462a5c641f1019b2df"
+  },
+  "population": {
+    "train": {
+      "months": 21,
+      "rows": 525000,
+      "positives": 4307,
+      "all_cases": 10500,
+      "eligible_cases": 2085,
+      "in_catalog": 4307,
+      "all_assets": 5367
+    },
+    "validation": {
+      "months": 6,
+      "rows": 150000,
+      "positives": 1068,
+      "all_cases": 3000,
+      "eligible_cases": 481,
+      "in_catalog": 1068,
+      "all_assets": 1377
+    },
+    "evaluation": {
+      "months": 4,
+      "rows": 100000,
+      "positives": 508,
+      "all_cases": 2000,
+      "eligible_cases": 236,
+      "in_catalog": 508,
+      "all_assets": 678
+    }
+  },
+  "feature_counts": {
+    "manual": 44,
+    "generated": 102,
+    "selected": 28,
+    "combined": 50,
+    "distinct_manual_and_generated": 107,
+    "overlap": 39
+  },
+  "example_rule": "first (month, customerID) with at least three in-catalog positive assets; scores do not select the case",
+  "example": {
+    "month": "2022-07-01",
+    "source_row_indices": [
+      22750,
+      22754,
+      22778,
+      22751,
+      22752,
+      22762,
+      22759,
+      22758,
+      22753,
+      22781,
+      22757,
+      22755,
+      22756,
+      22767,
+      22766,
+      22761,
+      22777,
+      22779,
+      22788,
+      22786,
+      22763,
+      22785,
+      22783,
+      22791,
+      22768,
+      22770,
+      22765,
+      22798,
+      22764,
+      22771,
+      22760,
+      22773,
+      22784,
+      22787,
+      22793,
+      22790,
+      22772,
+      22797,
+      22799,
+      22782,
+      22769,
+      22780,
+      22776,
+      22789,
+      22775,
+      22794,
+      22795,
+      22774,
+      22792,
+      22796
+    ],
+    "top5": [
+      {
+        "rank": 1,
+        "source_row": 22750,
+        "ISIN": "GRS003003035",
+        "p": 0.5234386558686493,
+        "label": 1
+      },
+      {
+        "rank": 2,
+        "source_row": 22754,
+        "ISIN": "GRS014003032",
+        "p": 0.5191132285129997,
+        "label": 1
+      },
+      {
+        "rank": 3,
+        "source_row": 22778,
+        "ISIN": "GRS282183003",
+        "p": 0.3727303759456676,
+        "label": 0
+      },
+      {
+        "rank": 4,
+        "source_row": 22751,
+        "ISIN": "GRS015003007",
+        "p": 0.18104694968396745,
+        "label": 0
+      },
+      {
+        "rank": 5,
+        "source_row": 22752,
+        "ISIN": "GRS323003012",
+        "p": 0.18104694968396745,
+        "label": 0
+      }
+    ],
+    "positives": 3,
+    "hits": 2,
+    "recall": 0.6666666666666666,
+    "precision": 0.4,
+    "dcg": 1.6309297535714575,
+    "idcg": 2.1309297535714578,
+    "ndcg": 0.7653606369886217,
+    "sample_features": {
+      "user__count__90d": 15.0,
+      "pair__count__90d": 2.0,
+      "pair__share__90d": 0.13333334028720856,
+      "pair__recency__180d": 9.0,
+      "item__count__30d": 354.0,
+      "user__unique__90d": 8.0
+    },
+    "logloss_positive": {
+      "source_row": 22750,
+      "p": 0.5234386558686493,
+      "loss": 0.6473354363044158
+    },
+    "logloss_negative": {
+      "source_row": 22778,
+      "p": 0.3727303759456676,
+      "loss": 0.466378808367154
+    }
+  },
+  "manual_global": {
+    "hits": 298,
+    "positive_assets": 508,
+    "macro_recall": 0.6553085325829593,
+    "micro_recall": 0.5866141732283464,
+    "recommendations": 10000,
+    "precision_all": 0.0298
+  },
+  "evaluation_fits": 0
+}
