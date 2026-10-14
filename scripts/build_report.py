@@ -1,10 +1,14 @@
 """Собрать документы для сдачи из зафиксированных результатов; fit не используется."""
 import argparse
+import ast
 import csv
 import json
 import math
+from html import escape
 from pathlib import Path
+from string import Template
 import sys
+import textwrap
 import numpy as np
 import pandas as pd
 
@@ -49,6 +53,205 @@ def window(s):
 def description(s):
     operation = "Число разных активов" if s.operation == "unique" and s.relation != "item" else OP[s.operation]
     return f"{operation}; {REL[s.relation].lower()}; {window(s)}"
+
+
+def source_fragment(filename, *symbols):
+    """Extract complete definitions from the implementation, including decorators."""
+    source = (ROOT / "src/research/feature_automation" / filename).read_text()
+    lines = source.splitlines()
+    module = ast.parse(source)
+    fragments = []
+    for symbol in symbols:
+        body = module.body
+        for part in symbol.split("."):
+            matches = [node for node in body if getattr(node, "name", None) == part
+                       or isinstance(node, ast.Assign) and any(
+                           isinstance(target, ast.Name) and target.id == part
+                           for target in node.targets)]
+            if len(matches) != 1:
+                raise ValueError(f"Cannot locate {filename}:{symbol}")
+            node = matches[0]
+            body = getattr(node, "body", [])
+        start = min([node.lineno] + [d.lineno for d in getattr(node, "decorator_list", [])])
+        fragment = textwrap.dedent("\n".join(lines[start - 1:node.end_lineno]))
+        compile(fragment, f"{filename}:{symbol}", "exec")
+        fragments.append(fragment)
+    return "```python\n" + "\n\n".join(fragments) + "\n```"
+
+
+def source_range(filename, first, last):
+    """Extract an exact, explicitly delimited executable portion of a function."""
+    source = (ROOT / "src/research/feature_automation" / filename).read_text()
+    if source.count(first) != 1 or source.count(last) != 1:
+        raise ValueError(f"Ambiguous implementation range in {filename}")
+    start = source.rfind("\n", 0, source.index(first)) + 1
+    end = source.index("\n", source.index(last))
+    fragment = textwrap.dedent(source[start:end])
+    compile(fragment, filename, "exec")
+    return "```python\n" + fragment + "\n```"
+
+
+def embed_implementations(report):
+    """Keep formulas, explanations and actual implementation in one document."""
+    def insert_before(marker, content):
+        nonlocal report
+        if report.count(marker) != 1:
+            raise ValueError(f"Report insertion point is not unique: {marker}")
+        report = report.replace(marker, content + "\n\n" + marker, 1)
+
+    insert_before("## 3. Временной протокол", """### Код подготовки данных и целевого ответа
+
+Ниже приведён действующий код чтения данных и выбора выборки. `Buy` — покупка; `timestamp` — дата события; `customerID` и `ISIN` — ключи клиента и актива. Отбор клиентов и каталога использует только период до апреля 2020.
+
+""" + source_fragment("features.py", "load_data", "select_cohort") + """
+
+Целевой ответ вычисляет метод `Builder.labels`: повторные покупки внутри месяца объединяются через `drop_duplicates`, а отсутствие покупки даёт ноль. `self.pairs` — все 500 × 50 кандидатных пар; его построение показано в полном классе `Builder` в разделе 4.
+
+""" + source_fragment("features.py", "Builder.labels"))
+
+    insert_before("## 4. Ручные признаки", """### Код временных разбиений
+
+`FOLDS` задаёт начало и конец каждого внутреннего проверочного блока. `train` включает строки строго до начала блока, `check` — его месяцы. Конструктор класса `Experiment` сохраняет эти маски и объекты расчёта метрик; будущие месяцы не попадают в соответствующий `fit`.
+
+""" + source_fragment("experiment.py", "FOLDS", "Experiment.__init__"))
+
+    insert_before("### Реальный пример расчёта признаков", """### Код определения и расчёта признаков
+
+Код ниже взят из `features.py`. Для его чтения нужны стандартные импорты:
+
+```python
+from dataclasses import dataclass, asdict, replace
+import hashlib
+import itertools
+import json
+import time
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import log_loss, roc_auc_score
+```
+
+`Feature` описывает один признак: связь, операцию и окно. `RELATIONS` определяет ключи группировки. Например, связь `pair` группирует покупки одновременно по клиенту и активу. `OLD` — пять исходных счётчиков, с которыми сравнивается расширенная база.
+
+""" + source_fragment("features.py", "Feature", "RELATIONS", "OLD", "manual_features") + """
+
+В полном классе `Builder` реализованы все операции. `context` ограничивает историю условием `timestamp < cutoff`; `column` дополнительно задаёт левую границу окна. `groupby(...).size()` считает покупки, `nunique()` — разные сущности, `timestamp.max()` — последнюю покупку, `np.divide` — долю. `np.log1p(x)` означает `ln(1 + x)`, поэтому ветка `trend` буквально реализует формулу из каталога. `matrix` объединяет значения в матрицу «строки × признаки».
+
+""" + source_fragment("features.py", "Builder") + """
+
+Для доли `pair__share__90d` числитель — `pair__count__90d`, знаменатель — `user__count__90d`. Условие `where=denominator > 0` предотвращает деление на ноль. Код 181 для давности обозначает отсутствие покупки в 180-дневной истории. Кэш сохраняет уже рассчитанные столбцы и не добавляет будущие события.""")
+
+    insert_before("## 6. Автоматизация", """### Код настройки и получения вероятностей
+
+`grid` составляет один и тот же список 16 конфигураций. Метод `cv` обучает бустинг отдельно на каждом временном блоке, получает вероятность положительного класса через `predict_proba(... )[:, 1]` и усредняет Recall с весом числа учитываемых клиент-месяцев. Поэтому это среднее по случаям, а не по трём процентам. Код деревьев и оптимизации LogLoss используется из scikit-learn.
+
+""" + source_fragment("experiment.py", "REFERENCE", "grid", "Experiment.cv", "Experiment.tune") + """
+
+После выбора параметров `freeze` обучает финальную модель только до января 2022, рассчитывает диагностическую validation и сохраняет веса. `specs` — определения признаков; `params` — выбранные параметры. Эти методы относятся к классу `Experiment`, конструктор которого показан в разделе 3.
+
+""" + source_fragment("experiment.py", "Experiment.freeze"))
+
+    insert_before("## 7. Вклад ручных признаков", """### Код генератора, отбора и поиска окон
+
+`generated_features` создаёт комбинации связей, операций и окон. Это генерация программой внутри заданной грамматики.
+
+""" + source_fragment("features.py", "generated_features") + """
+
+В алгоритме используются два небольших вспомогательных определения: `unique` убирает одинаковые определения признаков, `replace` создаёт копию определения с новым окном.
+
+""" + source_fragment("experiment.py", "unique") + """
+
+Метод `select` выбирает лучшее семейство, затем принимает только добавления с приростом внутреннего Recall больше `1e-6`. При непустой `base` поиск добавляет признаки к уже заданному набору; при пустой — строит автоматическую модель с нуля.
+
+""" + source_fragment("experiment.py", "Experiment.select") + """
+
+`refine` оценивает исключение каждого окна и пробует изменить самое полезное. `chosen` — исходное окно, `proposals` — новые значения. Запись `accepted` появляется только при улучшении внутренней метрики; отклонённые варианты также остаются в журнале.
+
+""" + source_fragment("experiment.py", "Experiment.refine"))
+
+    insert_before("### Реальный top-5 и расчёт одного случая", """### Код ранжирования и метрик
+
+Ниже приведён полный класс `Ranking` из `metrics.py`. `group` обозначает клиент-месяц, `self.total` — число купленных в каталоге активов. В `cases` выбираются первые пять позиций, `hits` считает попадания, а деления реализуют Recall, Precision и NDCG. `self.idcg` — идеальный DCG. NumPy нумерует позиции с нуля, поэтому `log2(rank + 2)` соответствует `log2(j + 1)` в формуле с нумерацией с единицы.
+
+""" + source_fragment("metrics.py", "Ranking") + """
+
+`evaluate` усредняет Recall/NDCG по ненулевым покупкам: остальные случаи имеют `NaN` и пропускаются в `mean`. Precision_all включает все случаи. LogLoss и глобальный AUC вызываются из scikit-learn.
+
+Чтобы проверка не зависела только от этих вызовов, LogLoss и AUC также пересчитываются явно. Это действующий фрагмент независимой проверки: `frame` содержит ответы, `saved[name]` — сохранённые вероятности одной модели.
+
+""" + source_range("verify.py", "y = frame.label.to_numpy()", "(n_positive*(len(y)-n_positive)))") + """
+
+`independent_loss` буквально повторяет формулу LogLoss. Для AUC используются средние ранги одинаковых вероятностей: сумма рангов положительных примеров за вычетом `n_positive*(n_positive+1)/2` делится на число положительно-отрицательных пар. Этот фрагмент выполняется для пяти ML-моделей, у которых оба класса присутствуют.
+
+Отдельный расчёт ranking-метрик использует обычный цикл и пересечение множеств. Функция ниже из `verify.py` проверяет ту же формулу другим способом; правила равных оценок сохраняются.
+
+""" + source_fragment("verify.py", "metric_oracle"))
+
+    insert_before("Основной интервал включает ноль:", """### Код парного клиентского bootstrap
+
+`a` и `b` — таблицы показателей двух моделей на одинаковых клиент-месяцах; `users` — все 500 клиентов. `draws` содержит 5000 выборок клиентов с возвращением. Индексация повторяет вклад клиента столько раз, сколько он выбран; сумма `n` задаёт соответствующий знаменатель. Затем берутся квантили 2,5% и 97,5%.
+
+""" + source_fragment("metrics.py", "paired_bootstrap"))
+
+    insert_before("## 11. Рекомендации и ограничения", """### Код проверки сохранённых вероятностей
+
+Фрагмент из `verify.py` повторно строит признаки по исходным данным и сравнивает вероятности сохранённой модели с опубликованным CSV. `err == 0` проверяет точное совпадение. Следующая перестановка проверяет, что результат не меняется от порядка строк после возвращения к исходному порядку. Здесь выполняется только прогноз, обучение не вызывается.
+
+""" + source_range("verify.py", 'artifact = joblib.load(args.out / f"{name}.joblib")', "predict_errors[name] = err"))
+
+    return report
+
+
+def build_short_report(evaluation, verified):
+    """Build a compact, offline HTML view of the same fixed experiment."""
+    primary = evaluation["bootstrap"]["manual_plus_automatic - manual"]
+    rows = []
+    feature_counts = {"old_5": 5, "manual": 44, "automatic_all": 102,
+                      "automatic_selected": 28, "manual_plus_automatic": 50}
+    for name, metrics in evaluation["metrics"].items():
+        style = ' class="best"' if name == "manual" else ""
+        rows.append(f"<tr{style}><th scope=\"row\">{escape(LABELS[name])}</th>"
+                    f"<td>{feature_counts.get(name, '—')}</td>"
+                    f"<td>{pct(metrics['Recall@5'])}%</td>"
+                    f"<td>{num(metrics['NDCG@5'])}</td></tr>")
+    template = Template(r'''<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Краткий отчёт: ручной бустинг и автоматизация признаков на FAR-Trans.">
+<title>Краткий отчёт · Автоматизация признаков</title>
+<style>
+:root{color-scheme:light;--ink:#172b35;--muted:#52646b;--line:#dce5e5;--paper:#fff;--bg:#f5f7f4;--accent:#13645a;--pale:#e9f3ec;--warm:#f8f1df}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--accent);text-underline-offset:3px}a:focus-visible,summary:focus-visible{outline:3px solid #d98a26;outline-offset:4px}header{position:sticky;top:0;z-index:2;background:rgba(245,247,244,.96);border-bottom:1px solid var(--line)}.nav{max-width:1060px;margin:auto;padding:15px 28px;display:flex;align-items:center;gap:18px}.brand{font-weight:750;letter-spacing:-.4px;margin-right:auto}.nav a{text-decoration:none;font-size:14px}.button{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:10px;border:1px solid var(--line);font-weight:650;text-decoration:none;background:var(--paper);color:var(--ink)}.button.primary{background:var(--accent);border-color:var(--accent);color:white}.button:hover{filter:brightness(.95)}main{max-width:1060px;margin:auto;padding:36px 28px 28px}.hero{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:center;padding-bottom:30px}.eyebrow{text-transform:uppercase;letter-spacing:1.5px;font-size:11px;font-weight:750;color:var(--accent);margin:0 0 12px}h1{font-size:clamp(30px,4.5vw,44px);line-height:1.13;letter-spacing:-1.8px;margin:0 0 16px;max-width:650px}h2{font-size:23px;line-height:1.25;letter-spacing:-.5px;margin:0 0 12px}h3{font-size:16px;line-height:1.35;margin:0 0 7px}p{margin:0 0 12px}.intro{color:var(--muted);max-width:600px}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tag{font-size:12px;background:#edf1ef;border-radius:20px;padding:5px 10px;color:var(--muted)}.scorecard{background:var(--ink);color:white;padding:25px;border-radius:18px}.scorelabel{font-size:12px;color:#c6dbd6;margin:0}.score{font-size:52px;font-weight:750;line-height:1.15;letter-spacing:-2px;margin:8px 0}.scorecard p:last-child{margin:0;color:#c6dbd6;font-size:13px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}.card p{margin:0;font-size:14px;color:var(--muted)}.step{color:var(--accent);font-size:12px;font-weight:750;display:block;margin-bottom:8px}section{margin:0 0 26px}.section-title{display:flex;align-items:center;gap:10px;margin-bottom:12px}.section-title h2{margin:0}.section-title .hint{color:var(--muted);font-size:12px;margin-left:auto}.protocol{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px}.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;border-top:1px solid var(--line);padding-top:14px;margin-top:12px}.timeline strong{display:block;font-size:13px}.timeline span{display:block;font-size:12px;color:var(--muted)}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--paper)}table{border-collapse:collapse;width:100%;font-size:14px}thead{background:#eef2ef;color:var(--muted)}th,td{text-align:left;padding:12px 18px;border-bottom:1px solid var(--line)}thead th{font-size:11px;letter-spacing:.5px;text-transform:uppercase}tbody th{font-weight:500}td{font-variant-numeric:tabular-nums}tr:last-child th,tr:last-child td{border-bottom:0}.best{background:var(--pale)}.best th,.best td{font-weight:750;color:var(--accent)}.result-note{display:flex;gap:18px;align-items:flex-start;padding:14px 2px 0;font-size:13px;color:var(--muted)}.delta{font-size:18px;font-weight:750;color:var(--ink);white-space:nowrap}.conclusion{background:var(--pale);border:1px solid #cddfd1;border-radius:14px;padding:20px}.conclusion p:last-child{margin:0}.limits{background:var(--warm);border-radius:12px;padding:14px 18px;margin-top:12px;font-size:13px;line-height:1.55}.checks{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 0 0;font-size:12px;color:var(--muted)}.checks span{border:1px solid var(--line);border-radius:20px;padding:5px 10px;background:var(--paper)}footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}footer p{margin:0;margin-right:auto}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+@media(max-width:700px){html{scroll-padding-top:120px}.nav{padding:12px 18px;gap:12px;flex-wrap:wrap}.brand{font-size:14px}.nav a{font-size:12px}.nav .button{padding:7px 10px}main{padding:25px 18px}.hero{grid-template-columns:1fr;gap:16px}.scorecard{padding:18px}.score{font-size:42px}.grid{grid-template-columns:1fr}.timeline{grid-template-columns:1fr;gap:10px}.section-title{align-items:flex-start}.section-title .hint{max-width:130px;text-align:right}table{font-size:12px}th,td{padding:9px 7px}thead th{font-size:10px;letter-spacing:0}tbody th{min-width:0;width:43%}.result-note{gap:12px}.checks{gap:6px}h1{letter-spacing:-1px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{header,.actions,footer .button{display:none}body{background:white;font-size:10pt}main{max-width:none;padding:0}.hero{grid-template-columns:1.7fr 1fr}h1{font-size:26pt}.score{font-size:34pt}.card,.protocol,.conclusion,.limits,.scorecard,.table-wrap{break-inside:avoid}section{margin-bottom:16px}a{color:inherit}.scorecard{background:#edf2ef;color:#172b35}.scorelabel,.scorecard p:last-child{color:#52646b}}
+</style>
+</head>
+<body>
+<header><nav class="nav" aria-label="Навигация по отчёту"><span class="brand">FAR-Trans / ML</span><a href="#method">Метод</a><a href="#results">Результаты</a><a href="#conclusion">Вывод</a><a class="button primary" href="REPORT.md">Полный отчёт ↗</a></nav></header>
+<main>
+<div class="hero">
+<div><p class="eyebrow">Краткий отчёт · Учебное исследование</p><h1>Автоматизация признаков для рекомендаций</h1><p class="intro">Ручной бустинг и автоматический поиск признаков на истории покупок финансовых активов. Автоматизация реализована; прирост качества не подтверждён.</p><div class="tags"><span class="tag">500 клиентов</span><span class="tag">50 активов</span><span class="tag">Top-5 на месяц</span></div></div>
+<aside class="scorecard" aria-label="Основной результат"><p class="scorelabel">Ручная модель · Recall@5</p><div class="score">$manual_recall%</div><p>44 признака · +$manual_gain п.п. к пяти счётчикам<br>Автоматический отбор: $auto_recall%, 28 признаков</p></aside>
+</div>
+<section aria-labelledby="task-title"><h2 id="task-title">Что выполнено</h2><div class="grid"><article class="card"><span class="step">01 / РУЧНАЯ БАЗА</span><h3>Бустинг с 44 признаками</h3><p>Активность, повторные покупки, давность, доли и категориальные связи. Подбор 16 конфигураций.</p></article><article class="card"><span class="step">02 / АВТОМАТИЗАЦИЯ</span><h3>102 кандидата → 28 признаков</h3><p>Генерация «связь × операция × окно», отбор семейств, локальный поиск окон. Обе замены 180 → 135 дней отклонены.</p></article><article class="card"><span class="step">03 / ЭКСПЕРИМЕНТЫ</span><h3>5 моделей и 2 правила</h3><p>Одинаковые кандидаты, временные блоки и определения метрик. Проверены отдельный и объединённый варианты.</p></article></div></section>
+<section id="method" aria-labelledby="method-title"><h2 id="method-title">Данные и протокол</h2><div class="protocol"><p>FAR-Trans: цель — хотя бы одна записанная покупка пары «клиент–актив» в следующем месяце. Признаки используют историю строго до даты прогноза. Показов и явных отказов в данных нет.</p><div class="timeline"><div><strong>Обучение · апр 2020 — дек 2021</strong><span>525 000 пар · 3 внутренних блока для подбора</span></div><div><strong>Validation · янв — июн 2022</strong><span>150 000 пар · только диагностика</span></div><div><strong>Итог · июл — окт 2022</strong><span>100 000 пар · 508 положительных пар</span></div></div></div></section>
+<section id="results" aria-labelledby="results-title"><div class="section-title"><h2 id="results-title">Результаты</h2><span class="hint">Recall выше — лучше</span></div><div class="table-wrap"><table><thead><tr><th scope="col">Метод</th><th scope="col">Признаки</th><th scope="col">Recall@5</th><th scope="col">NDCG@5</th></tr></thead><tbody>$rows</tbody></table></div><div class="result-note"><span class="delta">−$combined_loss п.п.</span><span>Ручные + автоматические против ручной модели.<br>95% клиентский интервал: [$ci_low; +$ci_high] п.п. Он включает ноль.</span></div></section>
+<section id="conclusion" aria-labelledby="conclusion-title"><div class="conclusion"><h2 id="conclusion-title">Вывод</h2><p>Ручная инженерия улучшила наблюдаемый Recall на <strong>$manual_gain п.п.</strong> Автоматизация сократила исходный набор до 28 признаков, но превосходство или эквивалентность ручной модели не установлены. По текущим данным основной результат — ручной бустинг.</p><p>Реализованы оба этапа задания. Человек задаёт грамматику, программа генерирует и выбирает признаки; полная независимость от человека не заявляется.</p></div><div class="limits"><strong>Граница выводов.</strong> Итоговый период уже оценивался раньше, поэтому результат исследовательский. Recall считается по 236 клиент-месяцам с покупками (129 клиентов); каталог покрывает 74,93% покупок. Покупка не доказывает финансовую полезность. Для подтверждения эффекта нужен новый закрытый период.</div><div class="checks" aria-label="Проверки"><span>$tests тестов прошли</span><span>200 расчётов признаков</span><span>Метрики 7 методов совпали</span><span>Предсказания 5 моделей совпали точно</span></div><div class="actions"><a class="button primary" href="REPORT.md">Формулы, код и примеры →</a><a class="button" href="#results">Вернуться к результатам ↑</a></div></section>
+<footer><p>Источник: FAR-Trans · University of Glasgow · CC BY 4.0<br>Полный протокол, исходники и доказательства — в REPORT.md.</p><a class="button" href="#method">К протоколу ↑</a></footer>
+</main>
+</body>
+</html>
+''')
+    return template.substitute(
+        rows="\n".join(rows), manual_recall=pct(evaluation["metrics"]["manual"]["Recall@5"]),
+        auto_recall=pct(evaluation["metrics"]["automatic_selected"]["Recall@5"]),
+        manual_gain=pct(evaluation["metrics"]["manual"]["Recall@5"] - evaluation["metrics"]["old_5"]["Recall@5"]),
+        combined_loss=pct(-primary["delta"]), ci_low=pct(primary["ci95"][0]),
+        ci_high=pct(primary["ci95"][1]), tests=verified["unit_tests"])
 
 
 def main():
@@ -585,7 +788,7 @@ $$
 
 ## 12. Воспроизведение и источники
 
-Для чтения достаточно этого отчёта и выполненных notebooks: [ручной этап](notebooks/01_manual_baseline.ipynb), [автоматизация](notebooks/02_feature_automation.ipynb), [сравнение](notebooks/03_experiments.ipynb). Обучение выполнено фазами CLI; notebooks читают журналы и пересчитывают результаты. Полное повторное обучение запускается отдельно либо через RUN_TRAINING с новой папкой результатов.
+Все формулы, реализации, примеры и выводы для оценки содержатся в настоящем документе. Дополнительные выполненные notebooks: [ручной этап](notebooks/01_manual_baseline.ipynb), [автоматизация](notebooks/02_feature_automation.ipynb), [сравнение](notebooks/03_experiments.ipynb). Обучение выполнено фазами CLI; notebooks читают журналы и пересчитывают результаты. Полное повторное обучение запускается отдельно либо через RUN_TRAINING с новой папкой результатов.
 
 {reproduction}
 
@@ -602,8 +805,10 @@ $$
     import re
     appendix = re.sub(r"(?m)^## ([1-6])\. ", r"### 13.\1. ", appendix)
     report += "\n" + appendix
+    report = embed_implementations(report)
     (out / "REPORT.md").write_text(report)
-    print(json.dumps({"documents":["REPORT.md","results/evidence/feature_catalog.csv","results/evidence/report_calculations.json"],
+    (out / "report_short.html").write_text(build_short_report(evaluation, verified))
+    print(json.dumps({"documents":["REPORT.md","report_short.html","results/evidence/feature_catalog.csv","results/evidence/report_calculations.json"],
         "manual_recall":macro,"manual_hits":total_hits,"example_recall":hits/positives,"example_ndcg":dcg/idcg,
         "distinct_features":len(union)},ensure_ascii=False))
 

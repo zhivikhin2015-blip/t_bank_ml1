@@ -64,6 +64,58 @@
 
 Метаданные присоединяются по последней версии строго до $t$. В трёх парах ISIN/дата обнаружены конфликтующие категории. Неоднозначное поле заменяется неизвестным. Исторические сделки группируются по классификации, известной на дату прогноза. Эти фильтры не доказывают истинную историческую доступность ретроспективно реконструированных исходных данных. Авторы описывают реконструкцию покупок и изменения дат в [§3.3.1 публикации FAR-Trans](https://arxiv.org/html/2407.08692v1#S3.SS3.SSS1).
 
+### Код подготовки данных и целевого ответа
+
+Ниже приведён действующий код чтения данных и выбора выборки. `Buy` — покупка; `timestamp` — дата события; `customerID` и `ISIN` — ключи клиента и актива. Отбор клиентов и каталога использует только период до апреля 2020.
+
+```python
+def load_data(directory):
+    t = pd.read_csv(directory / "transactions.csv", dtype={"customerID": str, "ISIN": str})
+    t["timestamp"] = pd.to_datetime(t["timestamp"], errors="raise")
+    t = t.loc[(t.transactionType == "Buy") & (t.timestamp >= "2019-10-01")].copy()
+    a = pd.read_csv(directory / "asset_information.csv", dtype={"ISIN": str})
+    a["timestamp"] = pd.to_datetime(a["timestamp"], errors="raise")
+    fields = ["assetCategory", "assetSubCategory", "sector"]
+    # Конфликтующие значения в одной версии нельзя разрешать порядком CSV.
+    conflicts = []
+    rows = []
+    for (isin, ts), group in a.groupby(["ISIN", "timestamp"], sort=True):
+        row = {"ISIN": isin, "timestamp": ts}
+        for field in fields:
+            values = group[field].dropna().unique()
+            row[field] = values[0] if len(values) == 1 else np.nan
+            if len(values) > 1:
+                conflicts.append({"ISIN": isin, "timestamp": str(ts), "field": field,
+                                  "values": sorted(map(str, values))})
+        rows.append(row)
+    return t, pd.DataFrame(rows), conflicts
+
+def select_cohort(buys):
+    past = buys[(buys.timestamp >= "2019-10-01") & (buys.timestamp < "2020-04-01")]
+    users = past.customerID.drop_duplicates().sample(n=500, random_state=42).tolist()
+    items = past.ISIN.value_counts().head(50).index.tolist()
+    return users, items
+```
+
+Целевой ответ вычисляет метод `Builder.labels`: повторные покупки внутри месяца объединяются через `drop_duplicates`, а отсутствие покупки даёт ноль. `self.pairs` — все 500 × 50 кандидатных пар; его построение показано в полном классе `Builder` в разделе 4.
+
+```python
+def labels(self, dates):
+    frames, coverage = [], []
+    for cutoff in map(pd.Timestamp, dates):
+        future = self.buys[(self.buys.timestamp >= cutoff) &
+                           (self.buys.timestamp < cutoff + pd.DateOffset(months=1)) &
+                           self.buys.customerID.isin(self.users)]
+        positives = future[["customerID", "ISIN"]].drop_duplicates()
+        f = self.pairs.merge(positives.assign(label=1), how="left", on=["customerID", "ISIN"])
+        f["label"] = f.label.fillna(0).astype(np.int8)
+        f["prediction_date"] = cutoff
+        frames.append(f)
+        coverage.append({"month": str(cutoff.date()), "in_catalog": int(f.label.sum()),
+                         "all_assets": len(positives)})
+    return pd.concat(frames, ignore_index=True), coverage
+```
+
 ## 3. Временной протокол
 
 | Этап | Обучение | Проверяемые месяцы | Назначение |
@@ -80,6 +132,30 @@
 
 Период и правила сохранены в [protocol.json](results/final/protocol.json). До текущей финальной оценки исправлена обработка границы поиска окон; исходный протокол и код сохранены в provenance. После получения текущих финальных метрик признаки, параметры и веса не менялись.
 
+### Код временных разбиений
+
+`FOLDS` задаёт начало и конец каждого внутреннего проверочного блока. `train` включает строки строго до начала блока, `check` — его месяцы. Конструктор класса `Experiment` сохраняет эти маски и объекты расчёта метрик; будущие месяцы не попадают в соответствующий `fit`.
+
+```python
+FOLDS = [("2021-04-01", "2021-07-01"), ("2021-07-01", "2021-10-01"),
+         ("2021-10-01", "2022-01-01")]
+
+def __init__(self, builder, out):
+    self.builder, self.out = builder, out
+    self.dates = list(pd.date_range("2020-04-01", "2022-06-01", freq="MS"))
+    self.frame, self.coverage = builder.labels(self.dates)
+    self.ranks = []
+    self.splits = []
+    for start, end in FOLDS:
+        train = (self.frame.prediction_date < start).to_numpy()
+        check = ((self.frame.prediction_date >= start) & (self.frame.prediction_date < end)).to_numpy()
+        self.splits.append((train, check))
+        self.ranks.append(Ranking(self.frame.loc[check]))
+    self.cache, self.log = {}, []
+    self.timing = {"fit_seconds": 0.0, "predict_seconds": 0.0,
+                   "feature_seconds": 0.0, "fits": 0}
+```
+
 ## 4. Ручные признаки
 
 Ручная база — 44 признака. Она включает активность клиента и спрос на актив, повторные покупки пары, разнообразие активов и покупателей, давность, доли покупок и динамику. Косвенные связи с категорией, подкатегорией и сектором дают возможность оценивать активы, которые клиент ещё не покупал.
@@ -94,6 +170,157 @@
 | Клиент–сектор | 5 | 20 | 0 |
 
 Используются точные 30/90/180 дней и исходные календарные 1/3 месяца. При отсутствии покупок count/unique/share равны нулю; recency равен 181. Динамика сравнивает два соседних 30-дневных окна через разность логарифмов. Все формулы, **44 конкретных имени**, выбранные автоматические признаки и шесть добавлений выделены в [приложении с каталогом признаков](#13-каталог-признаков).
+
+### Код определения и расчёта признаков
+
+Код ниже взят из `features.py`. Для его чтения нужны стандартные импорты:
+
+```python
+from dataclasses import dataclass, asdict, replace
+import hashlib
+import itertools
+import json
+import time
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import log_loss, roc_auc_score
+```
+
+`Feature` описывает один признак: связь, операцию и окно. `RELATIONS` определяет ключи группировки. Например, связь `pair` группирует покупки одновременно по клиенту и активу. `OLD` — пять исходных счётчиков, с которыми сравнивается расширенная база.
+
+```python
+@dataclass(frozen=True)
+class Feature:
+    relation: str
+    operation: str
+    days: int = 0
+    months: int = 0
+
+    @property
+    def name(self):
+        window = f"{self.months}m" if self.months else f"{self.days}d"
+        return f"{self.relation}__{self.operation}__{window}"
+
+    def description(self):
+        return asdict(self) | {"name": self.name}
+
+RELATIONS = {
+    "user": ["customerID"], "item": ["ISIN"],
+    "pair": ["customerID", "ISIN"],
+    "category": ["customerID", "assetCategory"],
+    "subcategory": ["customerID", "assetSubCategory"],
+    "sector": ["customerID", "sector"],
+}
+
+OLD = [Feature("user", "count", months=1), Feature("pair", "count", months=1),
+       Feature("item", "count", months=1), Feature("user", "count", months=3),
+       Feature("pair", "count", months=3)]
+
+def manual_features():
+    specs = list(OLD)
+    for days in (30, 90, 180):
+        specs += [Feature(r, "count", days) for r in ("user", "item", "pair")]
+        specs += [Feature(r, "unique", days) for r in ("user", "item")]
+        specs += [Feature("pair", "share", days)]
+    for r in RELATIONS:
+        specs.append(Feature(r, "recency", 180))
+        specs.append(Feature(r, "trend", 30))
+    for r in ("category", "subcategory", "sector"):
+        specs += [Feature(r, op, 90) for op in ("count", "share", "unique")]
+    return specs
+```
+
+В полном классе `Builder` реализованы все операции. `context` ограничивает историю условием `timestamp < cutoff`; `column` дополнительно задаёт левую границу окна. `groupby(...).size()` считает покупки, `nunique()` — разные сущности, `timestamp.max()` — последнюю покупку, `np.divide` — долю. `np.log1p(x)` означает `ln(1 + x)`, поэтому ветка `trend` буквально реализует формулу из каталога. `matrix` объединяет значения в матрицу «строки × признаки».
+
+```python
+class Builder:
+    def __init__(self, buys, metadata, users, items):
+        self.buys, self.metadata = buys, metadata
+        self.users, self.items = list(users), list(items)
+        self.pairs = pd.DataFrame({"customerID": users}).merge(
+            pd.DataFrame({"ISIN": items}), how="cross")
+        self.cache = {}
+        self._contexts = {}
+
+    def context(self, cutoff):
+        cutoff = pd.Timestamp(cutoff)
+        if cutoff not in self._contexts:
+            a = self.metadata[self.metadata.timestamp < cutoff].sort_values(
+                ["timestamp", "ISIN"]).drop_duplicates("ISIN", keep="last").drop(columns="timestamp")
+            pairs = self.pairs.merge(a, on="ISIN", how="left", validate="many_to_one")
+            past = self.buys[(self.buys.timestamp < cutoff) &
+                             (self.buys.timestamp >= cutoff - pd.Timedelta(days=180))]
+            past = past.merge(a, on="ISIN", how="left", validate="many_to_one")
+            self._contexts[cutoff] = (past, pairs)
+        return self._contexts[cutoff]
+
+    def clear_contexts(self):
+        self._contexts.clear()
+
+    def column(self, cutoff, spec):
+        cutoff = pd.Timestamp(cutoff)
+        key = (cutoff, spec)
+        if key in self.cache:
+            return self.cache[key]
+        past, pairs = self.context(cutoff)
+        start = cutoff - (pd.DateOffset(months=spec.months) if spec.months else
+                          pd.Timedelta(days=spec.days))
+        events = past[past.timestamp >= start]
+        keys = RELATIONS[spec.relation]
+        valid = events.dropna(subset=keys)
+
+        def mapped(aggregate):
+            if len(keys) == 1:
+                return pairs[keys[0]].map(aggregate).to_numpy(dtype=float)
+            idx = pd.MultiIndex.from_frame(pairs[keys])
+            return aggregate.reindex(idx).to_numpy(dtype=float)
+
+        if spec.operation == "recency":
+            durations = (cutoff - valid.groupby(keys).timestamp.max()).dt.total_seconds() / 86400
+            values = mapped(durations)
+            values = np.nan_to_num(values, nan=181.0)
+        elif spec.operation == "trend":
+            recent = self.column(cutoff, Feature(spec.relation, "count", spec.days))
+            double = self.column(cutoff, Feature(spec.relation, "count", 2 * spec.days))
+            values = np.log1p(recent) - np.log1p(double - recent)
+        else:
+            if spec.operation == "unique":
+                distinct = "customerID" if spec.relation == "item" else "ISIN"
+                counts = valid.groupby(keys)[distinct].nunique()
+            else:
+                counts = valid.groupby(keys).size()
+            values = np.nan_to_num(mapped(counts), nan=0.0)
+            if spec.operation == "share":
+                denominator = self.column(cutoff, Feature("user", "count", spec.days, spec.months))
+                values = np.divide(values, denominator, out=np.zeros_like(values), where=denominator > 0)
+        values = values.astype(np.float32)
+        if not np.isfinite(values).all():
+            raise ValueError(f"Nonfinite feature {spec}")
+        self.cache[key] = values
+        return values
+
+    def matrix(self, dates, specs):
+        return np.concatenate([np.column_stack([self.column(d, s) for s in specs]) for d in dates])
+
+    def labels(self, dates):
+        frames, coverage = [], []
+        for cutoff in map(pd.Timestamp, dates):
+            future = self.buys[(self.buys.timestamp >= cutoff) &
+                               (self.buys.timestamp < cutoff + pd.DateOffset(months=1)) &
+                               self.buys.customerID.isin(self.users)]
+            positives = future[["customerID", "ISIN"]].drop_duplicates()
+            f = self.pairs.merge(positives.assign(label=1), how="left", on=["customerID", "ISIN"])
+            f["label"] = f.label.fillna(0).astype(np.int8)
+            f["prediction_date"] = cutoff
+            frames.append(f)
+            coverage.append({"month": str(cutoff.date()), "in_catalog": int(f.label.sum()),
+                             "all_assets": len(positives)})
+        return pd.concat(frames, ignore_index=True), coverage
+```
+
+Для доли `pair__share__90d` числитель — `pair__count__90d`, знаменатель — `user__count__90d`. Условие `where=denominator > 0` предотвращает деление на ноль. Код 181 для давности обозначает отсутствие покупки в 180-дневной истории. Кэш сохраняет уже рассчитанные столбцы и не добавляет будущие события.
 
 ### Реальный пример расчёта признаков
 
@@ -128,6 +355,94 @@
 
 Идентификаторы, дата и ответ не подаются модели как признаки. Все методы используют одинаковые пары и определения метрик. При равных оценках порядок задан BLAKE2b-хешем ключа (seed, клиент, дата, актив); он не зависит от ответа и порядка строк.
 
+### Код настройки и получения вероятностей
+
+`grid` составляет один и тот же список 16 конфигураций. Метод `cv` обучает бустинг отдельно на каждом временном блоке, получает вероятность положительного класса через `predict_proba(... )[:, 1]` и усредняет Recall с весом числа учитываемых клиент-месяцев. Поэтому это среднее по случаям, а не по трём процентам. Код деревьев и оптимизации LogLoss используется из scikit-learn.
+
+```python
+REFERENCE = dict(learning_rate=0.1, max_iter=100, max_leaf_nodes=7,
+                 min_samples_leaf=20, l2_regularization=0.0)
+
+def grid():
+    keys = list(REFERENCE)
+    candidates = [dict(zip(keys, v)) for v in itertools.product(
+        (0.05, 0.1, 0.2), (100, 200, 300), (7, 15, 31), (20, 60), (0.0, 1.0))]
+    rng = np.random.default_rng(42)
+    picked = [REFERENCE, REFERENCE | {"max_iter": 200}]
+    for i in rng.permutation(len(candidates)):
+        if candidates[i] not in picked:
+            picked.append(candidates[i])
+        if len(picked) == 16:
+            break
+    return picked
+
+def cv(self, specs, params, stage):
+    specs = unique(specs)
+    key = (tuple(specs), tuple(sorted(params.items())))
+    if key in self.cache:
+        record = self.cache[key]
+        self.log.append({"stage": stage, "cache_hit": True, "source_trial": record["trial"]})
+        return record
+    begin = time.perf_counter()
+    x = self.builder.matrix(self.dates, specs)
+    feature_time = time.perf_counter() - begin
+    self.timing["feature_seconds"] += feature_time
+    results = []
+    fit_time, predict_time = 0.0, 0.0
+    for (train, check), rank in zip(self.splits, self.ranks):
+        model = HistGradientBoostingClassifier(**params, early_stopping=False, random_state=42)
+        t = time.perf_counter()
+        model.fit(x[train], self.frame.label.to_numpy()[train])
+        fit_time += time.perf_counter() - t
+        t = time.perf_counter()
+        p = model.predict_proba(x[check])[:, 1]
+        predict_time += time.perf_counter() - t
+        results.append(rank.evaluate(p))
+    self.timing["fits"] += 3
+    self.timing["fit_seconds"] += fit_time
+    self.timing["predict_seconds"] += predict_time
+    eligible = sum(r["eligible_cases"] for r in results)
+    rows = sum(r["rows"] for r in results)
+    aggregate = {k: sum(r[k] * r["eligible_cases"] for r in results) / eligible
+                 for k in ("Recall@5", "NDCG@5", "Precision@5")}
+    aggregate["LogLoss"] = sum(r["LogLoss"] * r["rows"] for r in results) / rows
+    record = {"trial": len(self.log), "stage": stage, "features": [s.name for s in specs],
+              "params": params, "fold_metrics": results, "aggregate": aggregate,
+              "feature_seconds": feature_time, "fit_seconds": fit_time,
+              "predict_seconds": predict_time}
+    self.log.append(record)
+    self.cache[key] = record
+    with (self.out / "trials.jsonl").open("a") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    print(f"{stage}: trial={record['trial']} features={len(specs)} Recall={aggregate['Recall@5']:.5f}", flush=True)
+    return record
+
+def tune(self, specs, name):
+    records = [self.cv(specs, params, f"tune/{name}") for params in grid()]
+    best = min(records, key=lambda r: (-r["aggregate"]["Recall@5"], r["aggregate"]["LogLoss"],
+                                      r["params"]["max_iter"], r["params"]["max_leaf_nodes"]))
+    return best
+```
+
+После выбора параметров `freeze` обучает финальную модель только до января 2022, рассчитывает диагностическую validation и сохраняет веса. `specs` — определения признаков; `params` — выбранные параметры. Эти методы относятся к классу `Experiment`, конструктор которого показан в разделе 3.
+
+```python
+def freeze(self, specs, params, name):
+    t = time.perf_counter()
+    x = self.builder.matrix(self.dates, specs)
+    self.timing["feature_seconds"] += time.perf_counter() - t
+    train = (self.frame.prediction_date < "2022-01-01").to_numpy()
+    valid = ~train
+    model = HistGradientBoostingClassifier(**params, early_stopping=False, random_state=42)
+    t = time.perf_counter()
+    model.fit(x[train], self.frame.label.to_numpy()[train])
+    self.timing["fit_seconds"] += time.perf_counter() - t
+    self.timing["fits"] += 1
+    p = model.predict_proba(x[valid])[:, 1]
+    joblib.dump({"model": model, "features": specs, "params": params}, self.out / f"{name}.joblib")
+    return model, Ranking(self.frame.loc[valid]).evaluate(p), p
+```
+
 ## 6. Автоматизация
 
 Идея — составлять признаки как «связь × операция × временное окно». Допустимы шесть связей: user, item, pair, category, subcategory, sector; операции count, unique, share, recency, trend. Начальные окна 7, 14, 30, 60, 90, 180 дней дают 102 столбца. Это собственный ограниченный генератор, использующий принцип агрегации по отношениям, родственный [Deep Feature Synthesis, Kanter & Veeramachaneni, 2015](https://dai.lids.mit.edu/wp-content/uploads/2017/10/DSAA_DSM_2015.pdf). Полный DFS не реализован, теоретическая новизна этого принципа не заявляется.
@@ -158,6 +473,105 @@
 | Все исходные автоматические | 59,50 | 60,19 | 64,70 |
 | Автоматический отбор | 59,79 | 59,79 | 62,25 |
 | Ручные + автоматические | 59,63 | 60,32 | 64,66 |
+
+### Код генератора, отбора и поиска окон
+
+`generated_features` создаёт комбинации связей, операций и окон. Это генерация программой внутри заданной грамматики.
+
+```python
+def generated_features(windows=(7, 14, 30, 60, 90, 180)):
+    result = []
+    for r in RELATIONS:
+        for d in windows:
+            result.append(Feature(r, "count", d))
+            if r != "pair":
+                result.append(Feature(r, "unique", d))
+            if r not in ("user", "item"):
+                result.append(Feature(r, "share", d))
+        result += [Feature(r, "recency", 180), Feature(r, "trend", 30)]
+    return result
+```
+
+В алгоритме используются два небольших вспомогательных определения: `unique` убирает одинаковые определения признаков, `replace` создаёт копию определения с новым окном.
+
+```python
+def unique(specs):
+    return list(dict.fromkeys(specs))
+```
+
+Метод `select` выбирает лучшее семейство, затем принимает только добавления с приростом внутреннего Recall больше `1e-6`. При непустой `base` поиск добавляет признаки к уже заданному набору; при пустой — строит автоматическую модель с нуля.
+
+```python
+def select(self, families, base, name):
+    selected, remaining, steps = [], list(families), []
+    current = unique(base)
+    score = self.cv(current, REFERENCE, f"select/{name}/base")["aggregate"]["Recall@5"] if current else -1
+    while remaining:
+        candidates = []
+        for family in remaining:
+            specs = unique(current + families[family])
+            r = self.cv(specs, REFERENCE, f"select/{name}/{family}")
+            candidates.append((r["aggregate"]["Recall@5"], family, specs, r))
+        value, family, specs, r = max(candidates, key=lambda v: (v[0], -len(v[2]), v[1]))
+        if current and value <= score + 1e-6:
+            break
+        steps.append({"family": family, "previous_recall": score if score >= 0 else None,
+                      "recall": value, "trial": r["trial"]})
+        current, score = specs, value
+        selected.append(family)
+        remaining.remove(family)
+    return current, selected, steps
+```
+
+`refine` оценивает исключение каждого окна и пробует изменить самое полезное. `chosen` — исходное окно, `proposals` — новые значения. Запись `accepted` появляется только при улучшении внутренней метрики; отклонённые варианты также остаются в журнале.
+
+```python
+def refine(self, specs, families):
+    specs = list(specs)
+    log = []
+    score = self.cv(specs, REFERENCE, "refine/base")["aggregate"]["Recall@5"]
+    for family in families:
+        windows = sorted({s.days for s in specs if s.relation == family and
+                          s.operation not in ("recency", "trend")})
+        dropped = []
+        for days in windows:
+            retained = [s for s in specs if not (s.relation == family and s.days == days and
+                                                s.operation not in ("recency", "trend"))]
+            r = self.cv(retained, REFERENCE, f"refine/drop/{family}/{days}")
+            dropped.append((score - r["aggregate"]["Recall@5"], days))
+        if not dropped:
+            continue
+        _, chosen = max(dropped)
+        step = max(1, chosen // 2)
+        proposals = sorted({max(1, chosen - step), min(180, chosen + step)} - set(windows))
+        # Если соседи уже представлены, проверяем промежуточное целое окно.
+        if not proposals:
+            lower = [d for d in windows if d < chosen]
+            higher = [d for d in windows if d > chosen]
+            midpoints = []
+            if lower:
+                midpoints.append((max(lower) + chosen) // 2)
+            if higher:
+                midpoints.append((min(higher) + chosen) // 2)
+            proposals = sorted(set(midpoints) - set(windows))
+        attempts = []
+        for day in proposals:
+            revised = unique([replace(s, days=day) if s.relation == family and s.days == chosen and
+                              s.operation not in ("recency", "trend") else s for s in specs])
+            r = self.cv(revised, REFERENCE, f"refine/replace/{family}/{chosen}/{day}")
+            attempts.append((r["aggregate"]["Recall@5"], day, revised, r["trial"]))
+        accepted = None
+        if attempts:
+            value, day, revised, trial = max(attempts, key=lambda v: (v[0], -v[1]))
+            if value > score + 1e-6:
+                accepted = {"old_days": chosen, "new_days": day, "trial": trial,
+                            "previous_recall": score, "recall": value}
+                specs, score = revised, value
+        log.append({"family": family, "drop_importance": dropped, "proposed_days": proposals,
+                    "attempts": [{"days": d, "recall": v, "trial": t} for v, d, _, t in attempts],
+                    "accepted": accepted})
+    return specs, log
+```
 
 ## 7. Вклад ручных признаков
 
@@ -199,6 +613,113 @@ $$
 $$
 
 LogLoss считается по всем парам; меньшая ошибка лучше. Вероятности ограничиваются машинным epsilon для устойчивости. Глобальный ROC-AUC — вероятность, что случайная положительная пара выше отрицательной, плюс половина вероятности равенства. При одном классе AUC не определён. Глобальный AUC не заменяет ранжирование внутри клиента. Для правил LogLoss не определён без вероятностной калибровки. ROC-AUC для этих контролей не рассчитывался: они включены для сравнения top-5. Сам по себе AUC может вычисляться по ранговым оценкам без вероятностей.
+
+### Код ранжирования и метрик
+
+Ниже приведён полный класс `Ranking` из `metrics.py`. `group` обозначает клиент-месяц, `self.total` — число купленных в каталоге активов. В `cases` выбираются первые пять позиций, `hits` считает попадания, а деления реализуют Recall, Precision и NDCG. `self.idcg` — идеальный DCG. NumPy нумерует позиции с нуля, поэтому `log2(rank + 2)` соответствует `log2(j + 1)` в формуле с нумерацией с единицы.
+
+```python
+class Ranking:
+    def __init__(self, frame):
+        keys = ["customerID", "prediction_date"]
+        if frame.duplicated(keys + ["ISIN"]).any():
+            raise ValueError("Duplicate candidate")
+        if not frame.label.isin([0, 1]).all():
+            raise ValueError("Nonbinary target")
+        self.frame = frame.reset_index(drop=True)
+        self.y = self.frame.label.to_numpy()
+        self.group = self.frame.groupby(keys, sort=True).ngroup().to_numpy()
+        self.n = self.group.max() + 1
+        self.total = np.bincount(self.group, weights=self.y, minlength=self.n)
+        self.eligible = self.total > 0
+        self.keys = self.frame.groupby(keys, sort=True).first().reset_index()[keys]
+        payloads = zip(self.frame.customerID, self.frame.prediction_date, self.frame.ISIN)
+        self.tie = np.array([int.from_bytes(hashlib.blake2b(
+            json.dumps([42, str(u), str(pd.Timestamp(d).date()), str(i)],
+                       ensure_ascii=False, separators=(",", ":")).encode(),
+            digest_size=8, person=b"FAR-tie").digest(), "big") for u, d, i in payloads], dtype=np.uint64)
+        self.item = self.frame.ISIN.astype(str).to_numpy()
+        self.idcg = np.array([sum(1 / np.log2(j + 2) for j in range(min(int(r), 5)))
+                              for r in self.total])
+
+    def cases(self, scores, secondary=None):
+        scores = np.asarray(scores)
+        if scores.shape != self.y.shape or not np.isfinite(scores).all():
+            raise ValueError("Bad scores")
+        sec = np.zeros_like(scores) if secondary is None else np.asarray(secondary)
+        order = np.lexsort((self.item, self.tie, -sec, -scores, self.group))
+        g = self.group[order]
+        starts = np.r_[0, np.flatnonzero(g[1:] != g[:-1]) + 1]
+        rank = np.arange(len(g)) - np.repeat(starts, np.diff(np.r_[starts, len(g)]))
+        top = rank < 5
+        hits = np.bincount(g[top], weights=self.y[order[top]], minlength=self.n)
+        dcg = np.bincount(g[top], weights=self.y[order[top]] / np.log2(rank[top] + 2), minlength=self.n)
+        return self.keys.assign(positives=self.total, hits=hits,
+            recall=np.divide(hits, self.total, out=np.full(self.n, np.nan), where=self.eligible),
+            precision=hits / 5,
+            ndcg=np.divide(dcg, self.idcg, out=np.full(self.n, np.nan), where=self.eligible))
+
+    def evaluate(self, scores, probability=True, secondary=None):
+        c = self.cases(scores, secondary)
+        result = {"Recall@5": float(c.recall.mean()), "NDCG@5": float(c.ndcg.mean()),
+                  "Precision@5": float(c.loc[self.eligible, "precision"].mean()),
+                  "Precision@5_all": float(c.precision.mean()), "rows": len(self.y),
+                  "positives": int(self.y.sum()), "eligible_cases": int(self.eligible.sum()),
+                  "all_cases": int(self.n)}
+        if probability:
+            result["LogLoss"] = float(log_loss(self.y, scores, labels=[0, 1]))
+            result["ROC-AUC"] = float(roc_auc_score(self.y, scores)) if len(np.unique(self.y)) == 2 else None
+        else:
+            result.update({"LogLoss": None, "ROC-AUC": None})
+        return result
+```
+
+`evaluate` усредняет Recall/NDCG по ненулевым покупкам: остальные случаи имеют `NaN` и пропускаются в `mean`. Precision_all включает все случаи. LogLoss и глобальный AUC вызываются из scikit-learn.
+
+Чтобы проверка не зависела только от этих вызовов, LogLoss и AUC также пересчитываются явно. Это действующий фрагмент независимой проверки: `frame` содержит ответы, `saved[name]` — сохранённые вероятности одной модели.
+
+```python
+y = frame.label.to_numpy()
+probabilities = saved[name].to_numpy()
+clipped = np.clip(probabilities, np.finfo(float).eps, 1 - np.finfo(float).eps)
+independent_loss = float(-(y * np.log(clipped) + (1-y) * np.log1p(-clipped)).mean())
+n_positive = int(y.sum())
+ranks = pd.Series(probabilities).rank(method="average").to_numpy()
+independent_auc = float((ranks[y == 1].sum() - n_positive*(n_positive+1)/2) /
+                        (n_positive*(len(y)-n_positive)))
+```
+
+`independent_loss` буквально повторяет формулу LogLoss. Для AUC используются средние ранги одинаковых вероятностей: сумма рангов положительных примеров за вычетом `n_positive*(n_positive+1)/2` делится на число положительно-отрицательных пар. Этот фрагмент выполняется для пяти ML-моделей, у которых оба класса присутствуют.
+
+Отдельный расчёт ranking-метрик использует обычный цикл и пересечение множеств. Функция ниже из `verify.py` проверяет ту же формулу другим способом; правила равных оценок сохраняются.
+
+```python
+def metric_oracle(frame, scores, secondary=None):
+    data = frame.copy()
+    data["score"] = scores
+    data["secondary"] = np.zeros(len(data)) if secondary is None else secondary
+    tie = []
+    for row in data.itertuples():
+        payload = json.dumps([42, row.customerID, str(row.prediction_date.date()), row.ISIN],
+                             ensure_ascii=False, separators=(",", ":")).encode()
+        tie.append(int.from_bytes(hashlib.blake2b(payload, digest_size=8, person=b"FAR-tie").digest(), "big"))
+    data["tie"] = tie
+    recalls, ndcgs, precisions, all_precisions = [], [], [], []
+    for _, group in data.groupby(["customerID", "prediction_date"], sort=True):
+        ranked = group.sort_values(["score", "secondary", "tie", "ISIN"], ascending=[False, False, True, True])
+        positive = set(group.loc[group.label == 1, "ISIN"])
+        top = ranked.head(5).ISIN.tolist()
+        hits = len(positive.intersection(top))
+        all_precisions.append(hits / 5)
+        if positive:
+            recalls.append(hits / len(positive))
+            precisions.append(hits / 5)
+            dcg = sum(1 / np.log2(j + 2) for j, item in enumerate(top) if item in positive)
+            ideal = sum(1 / np.log2(j + 2) for j in range(min(len(positive), 5)))
+            ndcgs.append(dcg / ideal)
+    return {"Recall@5": float(np.mean(recalls)), "NDCG@5": float(np.mean(ndcgs)),
+            "Precision@5": float(np.mean(precisions)), "Precision@5_all": float(np.mean(all_precisions))}
+```
 
 ### Реальный top-5 и расчёт одного случая
 
@@ -258,6 +779,31 @@ $$
 
 Здесь $m_{u,b}$ — кратность выбора, $n_u$ — число учитываемых месяцев клиента. Пустых выборок не было. Интервал описывает вариацию клиентов при фиксированных моделях и периоде, а не новые рыночные режимы, переобучение или неопределённость отбора.
 
+### Код парного клиентского bootstrap
+
+`a` и `b` — таблицы показателей двух моделей на одинаковых клиент-месяцах; `users` — все 500 клиентов. `draws` содержит 5000 выборок клиентов с возвращением. Индексация повторяет вклад клиента столько раз, сколько он выбран; сумма `n` задаёт соответствующий знаменатель. Затем берутся квантили 2,5% и 97,5%.
+
+```python
+def paired_bootstrap(a, b, users, repeats=5000, seed=20261013):
+    if not a[["customerID", "prediction_date"]].equals(b[["customerID", "prediction_date"]]):
+        raise ValueError("Unpaired cases")
+    if not np.array_equal(a.positives, b.positives):
+        raise ValueError("Different targets")
+    eligible = a.positives > 0
+    per = pd.DataFrame({"customerID": a.customerID, "delta": a.recall - b.recall,
+                        "n": eligible.astype(int)}).groupby("customerID").agg(delta=("delta", "sum"), n=("n", "sum"))
+    per = per.reindex(users, fill_value=0)
+    rng = np.random.default_rng(seed)
+    draws = rng.integers(0, len(users), size=(repeats, len(users)))
+    numerators = per.delta.to_numpy()[draws].sum(axis=1)
+    denominators = per.n.to_numpy()[draws].sum(axis=1)
+    diffs = np.divide(numerators, denominators, out=np.full(repeats, np.nan), where=denominators > 0)
+    return {"delta": float((a.recall - b.recall).mean()),
+            "ci95": np.nanquantile(diffs, [0.025, 0.975]).tolist(), "repeats": repeats,
+            "empty_draws": int(np.isnan(diffs).sum()), "seed": seed,
+            "scope": "fixed fitted models and observed months; client sampling only"}
+```
+
 Основной интервал включает ноль: прирост автоматизации по Recall@5 не подтверждён, эквивалентность также не установлена. Ручной вариант выше правила по наблюдаемой разности; его диагностический интервал положителен. С учётом раскрытого периода это не независимое подтверждение будущего эффекта. Остальные сравнения диагностические, коррекция множественных проверок не применялась.
 
 ### Помесячное качество
@@ -307,6 +853,24 @@ $$
 
 Проверки: 8 тестов; независимый пересчёт ranking-метрик всех семи методов; LogLoss по формуле и AUC через ранги; точное воспроизведение вероятностей пяти моделей; 200 отдельных расчётов признаков; инвариантность проверенных признаков к будущим событиям; независимость ранжирования от ответов и порядка строк; явная проверка кратности клиентов в десяти bootstrap-выборках; совпадение CV-метрик 33 повторённых конфигураций. Финальная фаза запрещает fit, хеши моделей до/после совпадают. Максимальная ошибка независимых ranking-метрик — порядка $10^{-16}$, вероятностей — 0. Подтверждение: [verification.json](results/final/verification.json).
 
+### Код проверки сохранённых вероятностей
+
+Фрагмент из `verify.py` повторно строит признаки по исходным данным и сравнивает вероятности сохранённой модели с опубликованным CSV. `err == 0` проверяет точное совпадение. Следующая перестановка проверяет, что результат не меняется от порядка строк после возвращения к исходному порядку. Здесь выполняется только прогноз, обучение не вызывается.
+
+```python
+artifact = joblib.load(args.out / f"{name}.joblib")
+x = builder.matrix(dates, artifact["features"])
+prediction = artifact["model"].predict_proba(x)[:, 1]
+err = float(np.max(np.abs(prediction - saved[name].to_numpy())))
+assert err == 0
+# Порядок строк не меняет prediction после обратной перестановки.
+ix = np.random.default_rng(17).permutation(len(x))
+back = np.empty(len(x))
+back[ix] = artifact["model"].predict_proba(x[ix])[:, 1]
+assert np.array_equal(prediction, back)
+predict_errors[name] = err
+```
+
 ## 11. Рекомендации и ограничения
 
 **Выбор текущего решения:** ручной бустинг с 44 признаками имеет лучший наблюдаемый Recall@5 и LogLoss из сравниваемых ML-вариантов. Его следует представлять как основной результат ручного этапа. Автоматический отбор — отдельный исследованный метод с 28 признаками и меньшими измеренными затратами генерации, но без доказанного превосходства или эквивалентности по Recall.
@@ -331,7 +895,7 @@ $$
 
 ## 12. Воспроизведение и источники
 
-Для чтения достаточно этого отчёта и выполненных notebooks: [ручной этап](notebooks/01_manual_baseline.ipynb), [автоматизация](notebooks/02_feature_automation.ipynb), [сравнение](notebooks/03_experiments.ipynb). Обучение выполнено фазами CLI; notebooks читают журналы и пересчитывают результаты. Полное повторное обучение запускается отдельно либо через RUN_TRAINING с новой папкой результатов.
+Все формулы, реализации, примеры и выводы для оценки содержатся в настоящем документе. Дополнительные выполненные notebooks: [ручной этап](notebooks/01_manual_baseline.ipynb), [автоматизация](notebooks/02_feature_automation.ipynb), [сравнение](notebooks/03_experiments.ipynb). Обучение выполнено фазами CLI; notebooks читают журналы и пересчитывают результаты. Полное повторное обучение запускается отдельно либо через RUN_TRAINING с новой папкой результатов.
 
 Окружение исходного эксперимента: Python 3.15.0, NumPy 2.5.4, pandas 3.0.6, scikit-learn 1.9.1. Остальные версии перечислены в [environment/requirements-lock.txt](environment/requirements-lock.txt). Публичный архив сохранён в data/raw; источник, лицензия и контрольные суммы — в [data/manifest.json](data/manifest.json). Подготовка проверяет архив и оба используемых CSV по SHA-256.
 
